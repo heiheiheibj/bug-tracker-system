@@ -7,6 +7,7 @@ from app.models import Bug, Attachment, Project, Comment
 from app.decorators import admin_required, creator_or_admin_required, active_required, reply_bug_permission_required
 from app.utils.file_handler import process_upload, save_file
 
+
 @bp.route('/')
 @bp.route('/index')
 @login_required

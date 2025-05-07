@@ -227,11 +227,9 @@
                 <label class="form-label">状态</label>
                 <select name="status" class="form-control" required>
                     <option value="">请选择状态</option>
-                    <option value="待处理" {% if bug.status == '待处理' %}selected{% endif %}>待处理</option>
-                    <option value="处理中" {% if bug.status == '处理中' %}selected{% endif %}>处理中</option>
-                    <option value="返回待补充" {% if bug.status == '返回待补充' %}selected{% endif %}>返回待补充</option>
-                    <option value="更新完成" {% if bug.status == '更新完成' %}selected{% endif %}>更新完成</option>
-                    <option value="已关闭" {% if bug.status == '已关闭' %}selected{% endif %}>已关闭</option>
+                    {% for status_value, status_display in BUG_STATUS_DISPLAY.items() %}
+                    <option value="{{ status_value }}" {% if bug.status == status_value %}selected{% endif %}>{{ status_display }}</option>
+                    {% endfor %}
                 </select>
             </div>
 
@@ -239,11 +237,9 @@
                 <label class="form-label">类别</label>
                 <select name="category" class="form-control" required>
                     <option value="">请选择类别</option>
-                    <option value="功能" {% if bug.category == '功能' %}selected{% endif %}>功能</option>
-                    <option value="界面" {% if bug.category == '界面' %}selected{% endif %}>界面</option>
-                    <option value="性能" {% if bug.category == '性能' %}selected{% endif %}>性能</option>
-                    <option value="兼容性" {% if bug.category == '兼容性' %}selected{% endif %}>兼容性</option>
-                    <option value="其他" {% if bug.category == '其他' %}selected{% endif %}>其他</option>
+                    {% for category_value, category_display in BUG_CATEGORY_DISPLAY.items() %}
+                    <option value="{{ category_value }}" {% if bug.category == category_value %}selected{% endif %}>{{ category_display }}</option>
+                    {% endfor %}
                 </select>
             </div>
 
@@ -251,8 +247,9 @@
                 <label class="form-label">类型</label>
                 <select name="type" class="form-control" required>
                     <option value="">请选择类型</option>
-                    <option value="BUG" {% if bug.type == 'BUG' %}selected{% endif %}>BUG</option>
-                    <option value="REQUIREMENT" {% if bug.type == 'REQUIREMENT' %}selected{% endif %}>需求</option>
+                    {% for type_value, type_display in BUG_TYPE_DISPLAY.items() %}
+                    <option value="{{ type_value }}" {% if bug.type == type_value %}selected{% endif %}>{{ type_display }}</option>
+                    {% endfor %}
                 </select>
             </div>
         </div>

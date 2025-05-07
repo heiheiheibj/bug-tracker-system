@@ -54,8 +54,9 @@
                     <div class="layui-input-inline">
                         <select name="type" required lay-verify="required">
                             <option value="">请选择类型</option>
-                            <option value="BUG">BUG</option>
-                            <option value="REQUIREMENT">需求</option>
+                            {% for type_value, type_display in BUG_TYPE_DISPLAY.items() %}
+                            <option value="{{ type_value }}">{{ type_display }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                 </div>
@@ -64,11 +65,9 @@
                     <div class="layui-input-inline">
                         <select name="category" required lay-verify="required">
                             <option value="">请选择分类</option>
-                            <option value="功能">功能</option>
-                            <option value="界面">界面</option>
-                            <option value="性能">性能</option>
-                            <option value="兼容性">兼容性</option>
-                            <option value="其他">其他</option>
+                            {% for category_value, category_display in BUG_CATEGORY_DISPLAY.items() %}
+                            <option value="{{ category_value }}">{{ category_display }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                 </div>

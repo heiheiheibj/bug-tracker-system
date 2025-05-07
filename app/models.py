@@ -1,4 +1,5 @@
 from app import db, login_manager
+from app.constants import BugStatus, BUG_STATUS_DISPLAY
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
@@ -16,7 +17,7 @@ class User(UserMixin, db.Model):
     can_create_project = db.Column(db.Boolean, default=True)
     can_create_bug = db.Column(db.Boolean, default=True)
     can_reply_bug = db.Column(db.Boolean, default=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now)
     last_login = db.Column(db.DateTime)
 
     def set_password(self, password):
@@ -36,8 +37,8 @@ class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
     creator_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     creator = db.relationship('User', backref=db.backref('projects', lazy=True))
 
@@ -49,11 +50,11 @@ class Bug(db.Model):
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text)
     priority = db.Column(db.String(20), nullable=False)  # 高/中/低
-    status = db.Column(db.String(20), nullable=False)    # 待处理/处理中/返回待补充/更新完成/已关闭
+    status = db.Column(db.String(20), nullable=False, default=BugStatus.PENDING.value)  # 使用BugStatus枚举值
     type = db.Column(db.String(20), nullable=False)      # BUG/REQUIREMENT
     category = db.Column(db.String(20), nullable=False, default='功能')  # 功能/界面/性能/兼容性/其他
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
     creator_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
     creator = db.relationship('User', backref=db.backref('bugs', lazy=True))
@@ -66,8 +67,8 @@ class Comment(db.Model):
     """BUG评论/回复模型"""
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
     bug_id = db.Column(db.Integer, db.ForeignKey('bug.id'), nullable=False)
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     
@@ -85,7 +86,7 @@ class Attachment(db.Model):
     file_path = db.Column(db.String(512), nullable=False)  # 文件存储路径
     file_type = db.Column(db.String(50))  # 文件类型
     file_size = db.Column(db.Integer)  # 文件大小（字节）
-    upload_time = db.Column(db.DateTime, default=datetime.utcnow)
+    upload_time = db.Column(db.DateTime, default=datetime.now)
     bug_id = db.Column(db.Integer, db.ForeignKey('bug.id'), nullable=False)
     uploader_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     comment_id = db.Column(db.Integer, db.ForeignKey('comment.id'))
@@ -96,7 +97,7 @@ class Attachment(db.Model):
     @staticmethod
     def generate_stored_filename(filename):
         """生成唯一的存储文件名"""
-        timestamp = datetime.utcnow().strftime('%Y%m%d%H%M%S')
+        timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
         random_hash = md5(os.urandom(8)).hexdigest()[:8]
         ext = os.path.splitext(filename)[1]
         return f"{timestamp}_{random_hash}{ext}"

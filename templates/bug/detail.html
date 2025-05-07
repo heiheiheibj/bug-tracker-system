@@ -46,14 +46,15 @@
                             <tr>
                                 <td>状态</td>
                                 <td>
+                                    {% set status_display = BUG_STATUS_DISPLAY.get(bug.status, bug.status) %}
                                     {% if bug.status == '待处理' %}
-                                    <span class="layui-badge layui-bg-orange">{{ bug.status }}</span>
+                                    <span class="layui-badge layui-bg-orange">{{ status_display }}</span>
                                     {% elif bug.status == '处理中' %}
-                                    <span class="layui-badge layui-bg-blue">{{ bug.status }}</span>
+                                    <span class="layui-badge layui-bg-blue">{{ status_display }}</span>
                                     {% elif bug.status == '已关闭' %}
-                                    <span class="layui-badge layui-bg-gray">{{ bug.status }}</span>
+                                    <span class="layui-badge layui-bg-gray">{{ status_display }}</span>
                                     {% else %}
-                                    <span class="layui-badge-rim">{{ bug.status }}</span>
+                                    <span class="layui-badge-rim">{{ status_display }}</span>
                                     {% endif %}
                                 </td>
                             </tr>
@@ -71,7 +72,7 @@
                             </tr>
                             <tr>
                                 <td>分类</td>
-                                <td>{{ bug.category }}</td>
+                                <td>{{ BUG_CATEGORY_DISPLAY.get(bug.category, bug.category) }}</td>
                             </tr>
                             <tr>
                                 <td>项目名称</td>
@@ -227,9 +228,9 @@
                     <!-- 状态选择列 -->
                     <div class="layui-col-xs12 layui-col-sm3" style="padding-right: 10px;">
                         <select name="status" lay-verify="required" style="width: 100%;">
-                            <option value="待处理" {% if bug.status == '待处理' %}selected{% endif %}>待处理</option>
-                            <option value="处理中" {% if bug.status == '处理中' %}selected{% endif %}>处理中</option>
-                            <option value="已关闭" {% if bug.status == '已关闭' %}selected{% endif %}>已关闭</option>
+                            {% for status_value, status_display in BUG_STATUS_DISPLAY.items() %}
+                            <option value="{{ status_value }}" {% if bug.status == status_value %}selected{% endif %}>{{ status_display }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                     

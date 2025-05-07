@@ -77,11 +77,12 @@
                     <a href="{{ url_for('bug.index') }}">任务/事件列表</a>
                 </li>
                 <li class="layui-nav-item">
+                    <a href="{{ url_for('bug.create') }}">创建任务/事件</a>
+                </li>                
+                <li class="layui-nav-item">
                     <a href="{{ url_for('project.index') }}">项目管理</a>
                 </li>
-                <li class="layui-nav-item">
-                    <a href="{{ url_for('bug.create') }}">提交任务/事件</a>
-                </li>
+
                 {% if current_user.is_admin %}
                 <li class="layui-nav-item">
                     <a href="{{ url_for('user.index') }}">用户管理</a>

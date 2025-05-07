@@ -4,6 +4,7 @@ from flask_login import LoginManager
 from flask_migrate import Migrate
 import os
 from datetime import datetime
+from app.constants import BUG_STATUS_DISPLAY,BUG_CATEGORY_DISPLAY,BUG_TYPE_DISPLAY
 
 # 初始化扩展
 db = SQLAlchemy()
@@ -56,6 +57,15 @@ def create_app():
     from app.project import bp as project_bp
     app.register_blueprint(project_bp)
     
+    # 添加上下文处理器，使常量在所有模板中可用
+    @app.context_processor
+    def inject_constants():
+        return dict(
+            BUG_STATUS_DISPLAY=BUG_STATUS_DISPLAY,
+            BUG_TYPE_DISPLAY=BUG_TYPE_DISPLAY,
+            BUG_CATEGORY_DISPLAY=BUG_CATEGORY_DISPLAY
+        )
+    
     # 添加自定义过滤器
     def nl2br(value):
         if not value:
@@ -67,5 +77,4 @@ def create_app():
     # 创建数据库表
     with app.app_context():
         db.create_all()
-    
     return app

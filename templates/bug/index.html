@@ -40,7 +40,7 @@
     .hero-stats {
         display: flex;
         gap: 3rem;
-        margin-top: 1rem;
+        margin-top: 0rem;
     }
 
     .stat-item {
@@ -286,11 +286,14 @@
             
             <select name="status" class="form-select">
                 <option value="">状态</option>
-                <option value="待处理" {% if request.args.get('status') == '待处理' %}selected{% endif %}>待处理</option>
+                    {% for status_value, status_display in BUG_STATUS_DISPLAY.items() %}
+                    <option value="{{ status_value }}" {% if request.args.get('status') == status_value %}selected{% endif %}>{{ status_display }}</option>
+                    {% endfor %}
+                <!-- <option value="待处理" {% if request.args.get('status') == '待处理' %}selected{% endif %}>待处理</option>
                 <option value="处理中" {% if request.args.get('status') == '处理中' %}selected{% endif %}>处理中</option>
                 <option value="返回待补充" {% if request.args.get('status') == '返回待补充' %}selected{% endif %}>返回待补充</option>
                 <option value="更新完成" {% if request.args.get('status') == '更新完成' %}selected{% endif %}>更新完成</option>
-                <option value="已关闭" {% if request.args.get('status') == '已关闭' %}selected{% endif %}>已关闭</option>
+                <option value="已关闭" {% if request.args.get('status') == '已关闭' %}selected{% endif %}>已关闭</option> -->
             </select>
             
             <select name="priority" class="form-select">
