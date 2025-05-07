@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}禁止访问{% endblock %}
+
+{% block content %}
+<div class="layui-container">
+    <div class="layui-row">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-header">403 - 禁止访问</div>
+                <div class="layui-card-body">
+                    <div style="text-align: center; padding: 50px 0;">
+                        <i class="layui-icon layui-icon-face-surprised" style="font-size: 100px; color: #FFB800;"></i>
+                        <h1 style="margin: 20px 0;">您没有权限访问此页面</h1>
+                        <p>可能的原因：</p>
+                        <ul style="text-align: left; display: inline-block;">
+                            <li>您的账号权限不足</li>
+                            <li>您需要先登录</li>
+                            <li>您试图访问其他用户的私有内容</li>
+                        </ul>
+                        <div style="margin-top: 30px;">
+                            <a href="{{ url_for('bug.index') }}" class="layui-btn layui-btn-primary">
+                                <i class="layui-icon layui-icon-home"></i> 返回首页
+                            </a>
+                            {% if not current_user.is_authenticated %}
+                            <a href="{{ url_for('auth.login') }}" class="layui-btn">
+                                <i class="layui-icon layui-icon-user"></i> 登录
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

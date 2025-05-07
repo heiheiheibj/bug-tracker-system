@@ -1,0 +1,380 @@
+{% extends "base.html" %}
+
+{% block title %}Bug详情{% endblock %}
+
+{% block content %}
+<div class="layui-container">
+    <div class="layui-card">
+        <div class="layui-card-header">
+            <div class="layui-row">
+                <div class="layui-col-md8">
+                    <h2>Bug #{{ bug.id }}: {{ bug.title }}</h2>
+                </div>
+                <div class="layui-col-md4" style="text-align: right;">
+                    {% if current_user.is_admin or current_user.id == bug.creator_id %}
+                    <a href="{{ url_for('bug.edit', id=bug.id) }}" class="layui-btn">
+                        <i class="layui-icon layui-icon-edit"></i> 编辑
+                    </a>
+                    {% endif %}
+                    {% if current_user.is_admin %}
+                    <button class="layui-btn layui-btn-danger" onclick="deleteBug()">
+                        <i class="layui-icon layui-icon-delete"></i> 删除
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="layui-card-body">
+            <div class="layui-row">
+                <div class="layui-col-md8">
+                    <!-- Bug描述 -->
+                    <fieldset class="layui-elem-field">
+                        <legend>描述</legend>
+                        <div class="layui-field-box">
+                            {{ bug.description | nl2br }}
+                        </div>
+                    </fieldset>
+                </div>
+                <div class="layui-col-md4">
+                    <!-- Bug信息 -->
+                    <table class="layui-table" lay-size="lg">
+                        <colgroup>
+                            <col width="30%">
+                            <col width="70%">
+                        </colgroup>
+                        <tbody>
+                            <tr>
+                                <td>状态</td>
+                                <td>
+                                    {% if bug.status == '待处理' %}
+                                    <span class="layui-badge layui-bg-orange">{{ bug.status }}</span>
+                                    {% elif bug.status == '处理中' %}
+                                    <span class="layui-badge layui-bg-blue">{{ bug.status }}</span>
+                                    {% elif bug.status == '已关闭' %}
+                                    <span class="layui-badge layui-bg-gray">{{ bug.status }}</span>
+                                    {% else %}
+                                    <span class="layui-badge-rim">{{ bug.status }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>优先级</td>
+                                <td>
+                                    {% if bug.priority == '高' %}
+                                    <span class="layui-badge">高</span>
+                                    {% elif bug.priority == '中' %}
+                                    <span class="layui-badge layui-bg-orange">中</span>
+                                    {% else %}
+                                    <span class="layui-badge layui-bg-green">低</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>分类</td>
+                                <td>{{ bug.category }}</td>
+                            </tr>
+                            <tr>
+                                <td>项目名称</td>
+                                <td>{{ bug.project.name }}</td>
+                            </tr>
+                            <tr>
+                                <td>创建者</td>
+                                <td>{{ bug.creator.username }}</td>
+                            </tr>
+                            <tr>
+                                <td>创建时间</td>
+                                <td>{{ bug.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            </tr>
+                            <tr>
+                                <td>最后更新</td>
+                                <td>{{ bug.updated_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 附件列表 -->
+            <div class="layui-row" style="margin-top: 20px;">
+                <div class="layui-col-md12">
+                    <fieldset class="layui-elem-field">
+                        <legend>附件列表</legend>
+                        <div class="layui-field-box">
+                            {% if bug.attachments %}
+                            <table class="layui-table" lay-size="lg">
+                                <colgroup>
+                                    <col width="30%">
+                                    <col width="10%">
+                                    <col width="20%">
+                                    <col width="15%">
+                                    <col width="25%">
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th>文件名</th>
+                                        <th>大小</th>
+                                        <th>上传时间</th>
+                                        <th>上传者</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for attachment in bug.attachments %}
+                                    <tr>
+                                        <td>
+                                            {% if attachment.is_image() %}
+                                            <i class="layui-icon layui-icon-picture"></i>
+                                            {% else %}
+                                            <i class="layui-icon layui-icon-file"></i>
+                                            {% endif %}
+                                            {{ attachment.filename }}
+                                        </td>
+                                        <td>{{ attachment.get_file_size_display() }}</td>
+                                        <td>{{ attachment.upload_time.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        <td>{{ attachment.uploader.username }}</td>
+                                        <td>
+                                            <div class="layui-btn-group">
+                                                <a href="{{ url_for('bug.download_attachment', id=attachment.id) }}" 
+                                                   class="layui-btn layui-btn-xs">
+                                                    <i class="layui-icon layui-icon-download-circle"></i>下载
+                                                </a>
+                                                {% if attachment.is_previewable() %}
+                                                <a href="{{ url_for('bug.preview_attachment', id=attachment.id) }}" 
+                                                   target="_blank" class="layui-btn layui-btn-xs layui-btn-normal">
+                                                    <i class="layui-icon layui-icon-eye"></i>预览
+                                                </a>
+                                                {% endif %}
+                                                {% if current_user.is_admin or current_user.id == attachment.uploader_id or current_user.id == bug.creator_id %}
+                                                <button type="button" onclick="deleteAttachment({{ attachment.id }})" 
+                                                        class="layui-btn layui-btn-xs layui-btn-danger">
+                                                    <i class="layui-icon layui-icon-delete"></i>删除
+                                                </button>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            {% else %}
+                            <div class="layui-form-mid layui-word-aux">暂无附件</div>
+                            {% endif %}
+                        </div>
+                    </fieldset>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 评论区域 -->
+<div class="layui-row" style="margin-top: 20px;">
+    <div class="layui-container">
+        <fieldset class="layui-elem-field">
+            <legend>评论</legend>
+            <div class="layui-field-box">
+                <table class="layui-table" lay-size="lg">
+                    <colgroup>
+                        <col width="60%">
+                        <col width="8%">
+                        <col width="15%">
+                        <col width="15%">
+
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>回复内容</th>
+                            <th>回复人</th>
+                            <th>回复时间</th>
+                            <th>附件</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for comment in bug.comments|sort(attribute='created_at') %}
+                        <tr>
+                            <td>{{ comment.content }}</td>
+                            <td>{{ comment.author.username }}</td>
+                            <td>{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>
+                                {% if comment.attachments %}
+                                <div style="margin-top: 10px;">
+                                    <!-- <span style="color: #999;"></span> -->
+                                    {% for attachment in comment.attachments %}
+                                    <div style="margin-top: 5px;">
+                                        <a href="{{ url_for('bug.download_attachment', id=attachment.id) }}" target="_blank">
+                                            <i class="layui-icon layui-icon-file"></i> {{ attachment.filename }}
+                                        </a>
+                                        <span style="color: #999; font-size: 12px; margin-left: 10px;">
+                                            {{ attachment.get_file_size_display() }}
+                                        </span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </td>                            
+                        </tr>
+                    
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </fieldset>
+    </div>
+</div>
+
+<!-- 评论和状态更新表单 -->
+{% if bug.status != '已关闭' %}
+<div class="layui-row" style="margin-top: 20px;">
+    <div class="layui-container">
+        <form class="layui-form" method="post" enctype="multipart/form-data" action="{{ url_for('bug.detail', id=bug.id) }}">
+            <div class="layui-form-item">
+                <label class="layui-form-label">状态</label>
+                <div class="layui-input-block">
+                    <select name="status" lay-verify="required">
+                        <option value="待处理" {% if bug.status == '待处理' %}selected{% endif %}>待处理</option>
+                        <option value="处理中" {% if bug.status == '处理中' %}selected{% endif %}>处理中</option>
+                        <option value="已关闭" {% if bug.status == '已关闭' %}selected{% endif %}>已关闭</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-form-text">
+                <textarea name="content" placeholder="请输入评论内容" class="layui-textarea"></textarea>
+            </div>
+
+            <div class="layui-form-item">
+                <div class="layui-col-md12">
+                    <div class="layui-upload">
+                        <button type="button" class="layui-btn layui-btn-normal" id="upload-btn">
+                            <i class="layui-icon"></i>选择文件
+                        </button>
+                        <input type="file" name="files" multiple class="layui-upload-file" id="comment-upload" style="display:none;">
+                        <button class="layui-btn" lay-submit style="margin-left: 10px;">提交评论</button>
+                    </div>
+                    <div class="layui-upload-list">
+                        <div id="file-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <div class="layui-progress layui-progress-big" lay-filter="upload-progress" style="display:none;">
+                    <div class="layui-progress-bar" lay-percent="0%"></div>
+                </div>
+            </div>
+        </form>
+        
+        <script>
+        // 表单提交验证
+        document.getElementById('submit-btn').addEventListener('click', function(){
+            var content = document.getElementById('comment-content').value.trim();
+            if(content === ''){
+                layer.msg('评论内容不能为空', {icon: 2});
+                return false;
+            }
+            document.querySelector('form').submit();
+        });
+        
+        // 文件选择显示
+        document.getElementById('comment-upload').addEventListener('change', function(){
+            var files = this.files;
+            var html = '';
+            for(var i=0; i<files.length; i++){
+                html += '<div><i class="layui-icon layui-icon-file"></i> '+files[i].name+'</div>';
+            }
+            document.getElementById('file-list').innerHTML = html;
+        });
+        </script>
+    </div>
+</div>
+{% endif %}
+
+
+
+<!-- 删除附件的表单 -->
+<form id="deleteAttachmentForm" method="post" style="display: none;"></form>
+
+<!-- 删除确认表单 -->
+<form id="deleteForm" method="post" action="{{ url_for('bug.delete', id=bug.id) }}" style="display: none;"></form>
+{% endblock %}
+
+{% block script %}
+layui.use(['layer', 'form', 'upload', 'element'], function(){
+    var layer = layui.layer;
+    var form = layui.form;
+    var upload = layui.upload;
+    var element = layui.element;
+    
+    // 初始化表单
+    form.render();
+    
+    // 文件选择按钮点击事件
+    $('#upload-btn').click(function() {
+        $('#comment-upload').click();
+    });
+
+    // 文件选择改变事件
+    $('#comment-upload').change(function() {
+        var files = this.files;
+        var html = '';
+        for(var i = 0; i < files.length; i++){
+            html += '<div style="margin: 5px 0;"><i class="layui-icon layui-icon-file"></i> '+ files[i].name +'</div>';
+        }
+        $('#file-list').html(html);
+    });
+
+    // 表单提交事件
+    $('.layui-form').on('submit', function() {
+        if ($(this).find('textarea[name="content"]').val().trim() === '') {
+            layer.msg('请输入评论内容', {icon: 2});
+            return false;
+        }
+        layer.msg('正在提交...', {icon: 16, time: 0});
+        return true;
+    });
+    
+    // 为图片添加预览功能
+    $('.layui-table img').on('click', function(){
+        var src = $(this).attr('src');
+        layer.photos({
+            photos: {
+                "title": "附件预览",
+                "data": [{
+                    "src": src
+                }]
+            }
+        });
+    });
+});
+
+function deleteBug() {
+    layer.confirm('确定要删除这个Bug吗？', {
+        btn: ['确定','取消']
+    }, function(){
+        document.getElementById('deleteForm').submit();
+    });
+}
+
+function deleteAttachment(id) {
+    layer.confirm('确定要删除这个附件吗？', {
+        btn: ['确定','取消']
+    }, function(){
+        var form = document.getElementById('deleteAttachmentForm');
+        form.action = '/bug/attachment/' + id + '/delete';
+        form.submit();
+    });
+}
+
+// 图片预览功能
+function previewImage(src) {
+    layer.photos({
+        photos: {
+            "title": "图片预览",
+            "data": [{
+                "src": src
+            }]
+        },
+        anim: 5
+    });
+}
+{% endblock %}

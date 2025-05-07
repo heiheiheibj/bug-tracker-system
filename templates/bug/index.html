@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}Bug列表{% endblock %}
+
+{% block content %}
+<div class="layui-container">
+    <div class="layui-card">
+        <div class="layui-card-header">
+            <div class="layui-row">
+                <div class="layui-col-md6">
+                    <h2>Bug列表</h2>
+                </div>
+                <div class="layui-col-md6" style="text-align: right;">
+                    <a href="{{ url_for('bug.create') }}" class="layui-btn">
+                        <i class="layui-icon layui-icon-add-1"></i> 提交Bug
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="layui-card-body">
+            <!-- 搜索表单 -->
+            <form class="layui-form" method="get" action="{{ url_for('bug.index') }}">
+                <div class="layui-form-item" style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 15px;">
+                    <div class="layui-inline" style="margin-bottom: 0;">
+                        <select name="category" style="width: 120px;">
+                            <option value="">全部分类</option>
+                            <option value="功能" {% if request.args.get('category') == '功能' %}selected{% endif %}>功能</option>
+                            <option value="界面" {% if request.args.get('category') == '界面' %}selected{% endif %}>界面</option>
+                            <option value="性能" {% if request.args.get('category') == '性能' %}selected{% endif %}>性能</option>
+                            <option value="兼容性" {% if request.args.get('category') == '兼容性' %}selected{% endif %}>兼容性</option>
+                            <option value="其他" {% if request.args.get('category') == '其他' %}selected{% endif %}>其他</option>
+                        </select>
+                    </div>
+                    <div class="layui-inline" style="margin-bottom: 0;">
+                        <select name="project_id" style="width: 150px;">
+                            <option value="">全部项目</option>
+                            {% for project in projects %}
+                            <option value="{{ project.id }}" {% if request.args.get('project_id')|int == project.id %}selected{% endif %}>{{ project.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="layui-inline" style="margin-bottom: 0;">
+                        <select name="status" style="width: 120px;">
+                            <option value="">全部状态</option>
+                            <option value="待处理" {% if request.args.get('status') == '待处理' %}selected{% endif %}>待处理</option>
+                            <option value="处理中" {% if request.args.get('status') == '处理中' %}selected{% endif %}>处理中</option>
+                            <option value="返回待补充" {% if request.args.get('status') == '返回待补充' %}selected{% endif %}>返回待补充</option>
+                            <option value="更新完成" {% if request.args.get('status') == '更新完成' %}selected{% endif %}>更新完成</option>
+                            <option value="已关闭" {% if request.args.get('status') == '已关闭' %}selected{% endif %}>已关闭</option>
+                        </select>
+                    </div>
+                    <div class="layui-inline" style="margin-bottom: 0;">
+                        <input type="text" name="keyword" placeholder="标题关键字" class="layui-input" style="width: 180px;"
+                               value="{{ request.args.get('keyword', '') }}">
+                    </div>
+                    <div class="layui-inline" style="margin-bottom: 0;">
+                        <button class="layui-btn" lay-submit>搜索</button>
+                        <a href="{{ url_for('bug.index') }}" class="layui-btn layui-btn-primary">重置</a>
+                    </div>
+                </div>
+            </form>
+
+            <div style="overflow-x: auto; text-align: center;">
+                <table class="layui-table" style="min-width: 1300px; margin: 0 auto;">
+                    <colgroup>
+                        <col width="4%">
+                        <col width="35%">
+                        <col width="7%">
+                        <col width="8%">
+                        <col width="6%">
+                        <col width="10%">
+                        <col width="8%">
+                        <col width="12%">
+                        <col width="10%">
+                    </colgroup>
+                <thead>
+                    <tr>
+                        <th align="center">ID</th>
+                        <th align="center">标题</th>
+                        <th align="center">优先级</th>
+                        <th align="center">状态</th>
+                        <th align="center">类型</th>
+                        <th align="center">项目名称</th>
+                        <th align="center">创建者</th>
+                        <th align="center">创建时间</th>
+                        <th align="center">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for bug in bugs.items %}
+                    <tr>
+                        <td>{{ bug.id }}</td>
+                        <td align="left">
+                            <a href="{{ url_for('bug.detail', id=bug.id) }}">{{ bug.title }}</a>
+                        </td>
+                        <td>
+                            {% if bug.priority == '高' %}
+                            <span class="layui-badge">高</span>
+                            {% elif bug.priority == '中' %}
+                            <span class="layui-badge layui-bg-orange">中</span>
+                            {% else %}
+                            <span class="layui-badge layui-bg-green">低</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if bug.status == '待处理' %}
+                            <span class="layui-badge layui-bg-orange">{{ bug.status }}</span>
+                            {% elif bug.status == '处理中' %}
+                            <span class="layui-badge layui-bg-blue">{{ bug.status }}</span>
+                            {% elif bug.status == '已关闭' %}
+                            <span class="layui-badge layui-bg-gray">{{ bug.status }}</span>
+                            {% else %}
+                            <span class="layui-badge-rim">{{ bug.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ bug.category }}</td>
+                        <td>{{ bug.project.name }}</td>
+                        <td>{{ bug.creator.username }}</td>
+                        <td>{{ bug.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>
+                            <a href="{{ url_for('bug.detail', id=bug.id) }}" class="layui-btn layui-btn-xs">
+                                查看
+                            </a>
+                            {% if current_user.is_admin or current_user.id == bug.creator_id %}
+                            <a href="{{ url_for('bug.edit', id=bug.id) }}" class="layui-btn layui-btn-xs layui-btn-normal">
+                                编辑
+                            </a>
+                            {% endif %}
+                            {% if current_user.is_admin %}
+                            <button class="layui-btn layui-btn-xs layui-btn-danger" onclick="deleteBug({{ bug.id }})">
+                                删除
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            {% if bugs.pages > 1 %}
+            <div id="page"></div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- 删除确认表单 -->
+<form id="deleteForm" method="post" style="display: none;"></form>
+{% endblock %}
+
+{% block script %}
+{% if bugs.pages > 1 %}
+var laypage = layui.laypage;
+
+// 构建带搜索条件的URL
+function buildPageUrl(page) {
+    let url = '{{ url_for("bug.index") }}?page=' + page;
+    {% for key in ['category', 'project_id', 'status', 'keyword'] %}
+        if('{{ request.args.get(key, "") }}') {
+            url += '&{{ key }}={{ request.args.get(key, "") }}';
+        }
+    {% endfor %}
+    return url;
+}
+
+laypage.render({
+    elem: 'page',
+    count: {{ bugs.total }},
+    limit: {{ bugs.per_page }},
+    curr: {{ bugs.page }},
+    layout: ['count', 'prev', 'page', 'next'],
+    jump: function(obj, first){
+        if(!first){
+            location.href = buildPageUrl(obj.curr);
+        }
+    }
+});
+{% endif %}
+
+function deleteBug(id) {
+    layer.confirm('确定要删除这个Bug吗？', {
+        btn: ['确定','取消']
+    }, function(){
+        var form = document.getElementById('deleteForm');
+        form.action = '/bug/' + id + '/delete';
+        form.submit();
+    });
+}
+{% endblock %}

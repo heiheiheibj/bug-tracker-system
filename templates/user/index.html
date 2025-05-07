@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}用户管理{% endblock %}
+
+{% block content %}
+<div class="layui-container">
+    <div class="layui-card">
+        <div class="layui-card-header">
+            <div class="layui-row">
+                <div class="layui-col-md6">
+                    <h2>用户管理</h2>
+                </div>
+                <div class="layui-col-md6" style="text-align: right;">
+                    <a href="{{ url_for('user.create') }}" class="layui-btn">
+                        <i class="layui-icon layui-icon-add-1"></i> 添加用户
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="layui-card-body">
+            <div style="overflow-x: auto;">
+                <table class="layui-table">
+                    <colgroup>
+                        <col width="5%">
+                        <col width="15%">
+                        <col width="20%">
+                        <col width="10%">
+                        <col width="30%">
+                        <col width="20%">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>用户名</th>
+                            <th>邮箱</th>
+                            <th>状态</th>
+                            <th>权限</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.id }}</td>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                {% if user.is_active %}
+                                <span class="layui-badge layui-bg-green">启用</span>
+                                {% else %}
+                                <span class="layui-badge layui-bg-gray">禁用</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if user.is_admin %}
+                                <span class="layui-badge">管理员</span>
+                                {% endif %}
+                                
+                                {% if user.can_create_project %}
+                                <span class="layui-badge layui-bg-blue">创建项目</span>
+                                {% endif %}
+                                
+                                {% if user.can_create_bug %}
+                                <span class="layui-badge layui-bg-orange">创建Bug</span>
+                                {% endif %}
+                                
+                                {% if user.can_reply_bug %}
+                                <span class="layui-badge layui-bg-cyan">回复Bug</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('user.edit', id=user.id) }}" class="layui-btn layui-btn-xs layui-btn-normal">
+                                    编辑
+                                </a>
+                                {% if current_user.id != user.id %}
+                                <button class="layui-btn layui-btn-xs layui-btn-danger" onclick="deleteUser({{ user.id }})">
+                                    删除
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 删除确认表单 -->
+<form id="deleteForm" method="post" style="display: none;"></form>
+{% endblock %}
+
+{% block script %}
+function deleteUser(id) {
+    layer.confirm('确定要删除这个用户吗？', {
+        btn: ['确定','取消']
+    }, function(){
+        var form = document.getElementById('deleteForm');
+        form.action = '/user/' + id + '/delete';
+        form.submit();
+    });
+}
+{% endblock %}

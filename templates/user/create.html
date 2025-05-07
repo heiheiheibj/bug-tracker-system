@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}添加用户{% endblock %}
+
+{% block content %}
+<div class="layui-container">
+    <div class="layui-card">
+        <div class="layui-card-header">添加用户</div>
+        <div class="layui-card-body">
+            <form class="layui-form" method="post">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">用户名</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="username" required lay-verify="required" 
+                               placeholder="请输入用户名" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">邮箱</label>
+                    <div class="layui-input-block">
+                        <input type="email" name="email" required lay-verify="required|email" 
+                               placeholder="请输入邮箱" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">密码</label>
+                    <div class="layui-input-block">
+                        <input type="password" name="password" required lay-verify="required" 
+                               placeholder="请输入密码" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">账户状态</label>
+                    <div class="layui-input-block">
+                        <input type="checkbox" name="is_active" lay-skin="switch" lay-text="启用|禁用" checked>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">用户权限</label>
+                    <div class="layui-input-block">
+                        <input type="checkbox" name="is_admin" title="管理员">
+                        <input type="checkbox" name="can_create_project" title="创建项目" checked>
+                        <input type="checkbox" name="can_create_bug" title="创建Bug" checked>
+                        <input type="checkbox" name="can_reply_bug" title="回复Bug" checked>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" lay-submit>保存</button>
+                        <a href="{{ url_for('user.index') }}" class="layui-btn layui-btn-primary">返回</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

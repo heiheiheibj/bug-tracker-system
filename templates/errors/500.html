@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}服务器错误{% endblock %}
+
+{% block content %}
+<div class="layui-container">
+    <div class="layui-row">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-header">500 - 服务器内部错误</div>
+                <div class="layui-card-body">
+                    <div style="text-align: center; padding: 50px 0;">
+                        <i class="layui-icon layui-icon-face-cry" style="font-size: 100px; color: #FF5722;"></i>
+                        <h1 style="margin: 20px 0;">抱歉，服务器出现了问题</h1>
+                        <p>系统已记录此错误，我们会尽快修复。</p>
+                        <p>您可以：</p>
+                        <ul style="text-align: left; display: inline-block;">
+                            <li>刷新页面重试</li>
+                            <li>稍后再试</li>
+                            <li>返回首页</li>
+                        </ul>
+                        <div style="margin-top: 30px;">
+                            <button class="layui-btn" onclick="location.reload();">
+                                <i class="layui-icon layui-icon-refresh"></i> 刷新页面
+                            </button>
+                            <a href="{{ url_for('bug.index') }}" class="layui-btn layui-btn-primary">
+                                <i class="layui-icon layui-icon-home"></i> 返回首页
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

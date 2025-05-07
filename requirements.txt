@@ -1,0 +1,13 @@
+Flask==3.0.0
+Flask-SQLAlchemy==3.1.1
+Flask-Login==0.6.3
+Flask-Migrate==4.0.5
+Werkzeug==3.0.1
+python-dotenv==1.0.0
+email-validator==2.1.0.post1
+Pillow==10.1.0  # 用于图片处理
+
+# 测试相关
+coverage==7.4.0
+pytest==8.0.0
+pytest-cov==4.1.0

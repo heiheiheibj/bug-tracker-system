@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}页面未找到{% endblock %}
+
+{% block content %}
+<div class="layui-container">
+    <div class="layui-row">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-header">404 - 页面未找到</div>
+                <div class="layui-card-body">
+                    <div style="text-align: center; padding: 50px 0;">
+                        <i class="layui-icon layui-icon-face-cry" style="font-size: 100px; color: #FF5722;"></i>
+                        <h1 style="margin: 20px 0;">您访问的页面不存在</h1>
+                        <p>可能的原因：</p>
+                        <ul style="text-align: left; display: inline-block;">
+                            <li>URL地址输入错误</li>
+                            <li>页面已被删除或移动</li>
+                            <li>您没有访问权限</li>
+                        </ul>
+                        <div style="margin-top: 30px;">
+                            <a href="{{ url_for('bug.index') }}" class="layui-btn layui-btn-primary">
+                                <i class="layui-icon layui-icon-home"></i> 返回首页
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

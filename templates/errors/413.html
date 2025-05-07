@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}文件过大{% endblock %}
+
+{% block content %}
+<div class="layui-container">
+    <div class="layui-row">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-header">413 - 请求实体过大</div>
+                <div class="layui-card-body">
+                    <div style="text-align: center; padding: 50px 0;">
+                        <i class="layui-icon layui-icon-file" style="font-size: 100px; color: #FFB800;"></i>
+                        <h1 style="margin: 20px 0;">上传的文件太大</h1>
+                        <p>系统限制：</p>
+                        <ul style="text-align: left; display: inline-block;">
+                            <li>单个文件大小不能超过100MB</li>
+                            <li>请压缩文件后重试</li>
+                            <li>或分多个文件上传</li>
+                        </ul>
+                        <div style="margin-top: 30px;">
+                            <button class="layui-btn" onclick="history.back();">
+                                <i class="layui-icon layui-icon-return"></i> 返回上一页
+                            </button>
+                            <a href="{{ url_for('bug.index') }}" class="layui-btn layui-btn-primary">
+                                <i class="layui-icon layui-icon-home"></i> 返回首页
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

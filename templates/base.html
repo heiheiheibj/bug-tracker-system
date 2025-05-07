@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>{% block title %}{% endblock %} - Bug管理系统</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layui.css') }}">
+    <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+</head>
+<body>
+    <div class="layui-layout layui-layout-admin">
+        <div class="layui-header">
+            <div class="layui-logo layui-hide-xs">Bug管理系统</div>
+            {% if current_user.is_authenticated %}
+            <ul class="layui-nav layui-layout-left">
+                <li class="layui-nav-item">
+                    <a href="{{ url_for('bug.index') }}">Bug列表</a>
+                </li>
+                <li class="layui-nav-item">
+                    <a href="{{ url_for('project.index') }}">项目管理</a>
+                </li>
+                <li class="layui-nav-item">
+                    <a href="{{ url_for('bug.create') }}">提交Bug</a>
+                </li>
+                {% if current_user.is_admin %}
+                <li class="layui-nav-item">
+                    <a href="{{ url_for('user.index') }}">用户管理</a>
+                </li>
+                {% endif %}
+                <li class="layui-nav-item">
+                    <a href="{{ url_for('user.change_password') }}">修改密码</a>
+                </li>
+            </ul>
+            <ul class="layui-nav layui-layout-right">
+                    <a href="javascript:;">
+                    <a href="javascript:;">
+                        <i class="layui-icon layui-icon-username"></i>
+                        {{ current_user.username }}
+                    </a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="{{ url_for('auth.logout') }}">退出登录</a></dd>
+                    </dl>
+                </li>
+            </ul>
+            {% endif %}
+        </div>
+
+        <div class="layui-body" style="padding: 15px;">
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            <div class="layui-container" style="margin-bottom: 15px;">
+                {% for message in messages %}
+                <div class="layui-card">
+                    <div class="layui-card-body" style="color: #FF5722;">
+                        {{ message }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </div>
+
+        <div class="layui-footer" style="display: none;">
+            <!-- 底部固定区域 -->
+            Bug管理系统 © 2024
+        </div>
+    </div>
+        
+    <script src="{{ url_for('static', filename='js/layui.js') }}"></script>
+    <script>
+        layui.use(['element', 'layer', 'form'], function(){
+            var element = layui.element;
+            var layer = layui.layer;
+            var form = layui.form;
+            
+            {% block script %}{% endblock %}
+        });
+    </script>
+</body>
+</html>

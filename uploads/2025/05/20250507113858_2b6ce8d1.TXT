@@ -1,0 +1,7 @@
+1、在小机器上装好SSH，端口是62627,FreeFileSync
+ ，共享目录在F盘,开通WINDOWS帐号
+2、开通域名 sftp2.8x86.com ,cname 为 frp-hat.top，NATFRP中指向小机器的IP
+做为以前的SFTP.8X86.COM的新域名，并删除 SFTP 这个隧道
+3、把 sftp。8x86.com 解析到 固定IP
+4、大机器的SFTP域名为 sftp1.8x86.com 
+5、 大小俩机器通过 raidrive 的SFTP共享目录,走内网IP
