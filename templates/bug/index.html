@@ -2,188 +2,427 @@
 
 {% block title %}Bug列表{% endblock %}
 
-{% block content %}
-<div class="layui-container">
-    <div class="layui-card">
-        <div class="layui-card-header">
-            <div class="layui-row">
-                <div class="layui-col-md6">
-                    <h2>Bug列表</h2>
-                </div>
-                <div class="layui-col-md6" style="text-align: right;">
-                    <a href="{{ url_for('bug.create') }}" class="layui-btn">
-                        <i class="layui-icon layui-icon-add-1"></i> 提交Bug
-                    </a>
-                </div>
-            </div>
-        </div>
-        <div class="layui-card-body">
-            <!-- 搜索表单 -->
-            <form class="layui-form" method="get" action="{{ url_for('bug.index') }}">
-                <div class="layui-form-item" style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 15px;">
-                    <div class="layui-inline" style="margin-bottom: 0;">
-                        <select name="category" style="width: 120px;">
-                            <option value="">全部分类</option>
-                            <option value="功能" {% if request.args.get('category') == '功能' %}selected{% endif %}>功能</option>
-                            <option value="界面" {% if request.args.get('category') == '界面' %}selected{% endif %}>界面</option>
-                            <option value="性能" {% if request.args.get('category') == '性能' %}selected{% endif %}>性能</option>
-                            <option value="兼容性" {% if request.args.get('category') == '兼容性' %}selected{% endif %}>兼容性</option>
-                            <option value="其他" {% if request.args.get('category') == '其他' %}selected{% endif %}>其他</option>
-                        </select>
-                    </div>
-                    <div class="layui-inline" style="margin-bottom: 0;">
-                        <select name="project_id" style="width: 150px;">
-                            <option value="">全部项目</option>
-                            {% for project in projects %}
-                            <option value="{{ project.id }}" {% if request.args.get('project_id')|int == project.id %}selected{% endif %}>{{ project.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="layui-inline" style="margin-bottom: 0;">
-                        <select name="status" style="width: 120px;">
-                            <option value="">全部状态</option>
-                            <option value="待处理" {% if request.args.get('status') == '待处理' %}selected{% endif %}>待处理</option>
-                            <option value="处理中" {% if request.args.get('status') == '处理中' %}selected{% endif %}>处理中</option>
-                            <option value="返回待补充" {% if request.args.get('status') == '返回待补充' %}selected{% endif %}>返回待补充</option>
-                            <option value="更新完成" {% if request.args.get('status') == '更新完成' %}selected{% endif %}>更新完成</option>
-                            <option value="已关闭" {% if request.args.get('status') == '已关闭' %}selected{% endif %}>已关闭</option>
-                        </select>
-                    </div>
-                    <div class="layui-inline" style="margin-bottom: 0;">
-                        <input type="text" name="keyword" placeholder="标题关键字" class="layui-input" style="width: 180px;"
-                               value="{{ request.args.get('keyword', '') }}">
-                    </div>
-                    <div class="layui-inline" style="margin-bottom: 0;">
-                        <button class="layui-btn" lay-submit>搜索</button>
-                        <a href="{{ url_for('bug.index') }}" class="layui-btn layui-btn-primary">重置</a>
-                    </div>
-                </div>
-            </form>
+{% block head %}
+<style>
+    .bug-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
 
-            <div style="overflow-x: auto; text-align: center;">
-                <table class="layui-table" style="min-width: 1300px; margin: 0 auto;">
-                    <colgroup>
-                        <col width="4%">
-                        <col width="35%">
-                        <col width="7%">
-                        <col width="8%">
-                        <col width="6%">
-                        <col width="10%">
-                        <col width="8%">
-                        <col width="12%">
-                        <col width="10%">
-                    </colgroup>
-                <thead>
-                    <tr>
-                        <th align="center">ID</th>
-                        <th align="center">标题</th>
-                        <th align="center">优先级</th>
-                        <th align="center">状态</th>
-                        <th align="center">类型</th>
-                        <th align="center">项目名称</th>
-                        <th align="center">创建者</th>
-                        <th align="center">创建时间</th>
-                        <th align="center">操作</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for bug in bugs.items %}
-                    <tr>
-                        <td>{{ bug.id }}</td>
-                        <td align="left">
-                            <a href="{{ url_for('bug.detail', id=bug.id) }}">{{ bug.title }}</a>
-                        </td>
-                        <td>
-                            {% if bug.priority == '高' %}
-                            <span class="layui-badge">高</span>
-                            {% elif bug.priority == '中' %}
-                            <span class="layui-badge layui-bg-orange">中</span>
-                            {% else %}
-                            <span class="layui-badge layui-bg-green">低</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if bug.status == '待处理' %}
-                            <span class="layui-badge layui-bg-orange">{{ bug.status }}</span>
-                            {% elif bug.status == '处理中' %}
-                            <span class="layui-badge layui-bg-blue">{{ bug.status }}</span>
-                            {% elif bug.status == '已关闭' %}
-                            <span class="layui-badge layui-bg-gray">{{ bug.status }}</span>
-                            {% else %}
-                            <span class="layui-badge-rim">{{ bug.status }}</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ bug.category }}</td>
-                        <td>{{ bug.project.name }}</td>
-                        <td>{{ bug.creator.username }}</td>
-                        <td>{{ bug.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                        <td>
-                            <a href="{{ url_for('bug.detail', id=bug.id) }}" class="layui-btn layui-btn-xs">
-                                查看
-                            </a>
-                            {% if current_user.is_admin or current_user.id == bug.creator_id %}
-                            <a href="{{ url_for('bug.edit', id=bug.id) }}" class="layui-btn layui-btn-xs layui-btn-normal">
-                                编辑
-                            </a>
-                            {% endif %}
-                            {% if current_user.is_admin %}
-                            <button class="layui-btn layui-btn-xs layui-btn-danger" onclick="deleteBug({{ bug.id }})">
-                                删除
-                            </button>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            
-            {% if bugs.pages > 1 %}
-            <div id="page"></div>
-            {% endif %}
-        </div>
-    </div>
-</div>
+    .hero-section {
+        height: 30vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        margin-bottom: 2rem;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.8s ease-out;
+    }
 
-<!-- 删除确认表单 -->
-<form id="deleteForm" method="post" style="display: none;"></form>
-{% endblock %}
+    .hero-section.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
 
-{% block script %}
-{% if bugs.pages > 1 %}
-var laypage = layui.laypage;
+    .hero-title {
+        font-size: 4.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, #000 0%, #333 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
 
-// 构建带搜索条件的URL
-function buildPageUrl(page) {
-    let url = '{{ url_for("bug.index") }}?page=' + page;
-    {% for key in ['category', 'project_id', 'status', 'keyword'] %}
-        if('{{ request.args.get(key, "") }}') {
-            url += '&{{ key }}={{ request.args.get(key, "") }}';
+    .hero-stats {
+        display: flex;
+        gap: 3rem;
+        margin-top: 1rem;
+    }
+
+    .stat-item {
+        text-align: center;
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        color: var(--text-secondary);
+        font-size: 1rem;
+    }
+
+    .search-section {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.6s ease-out;
+    }
+
+    .search-section.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .search-form {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .search-form select,
+    .search-form input {
+        width: 100%;
+        padding: 0.8rem;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        background: white;
+        font-size: 0.9rem;
+    }
+
+    .search-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        margin-top: 1rem;
+    }
+
+    .bento-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .bug-card {
+        background: white;
+        border-radius: 20px;
+        padding: 1.5rem;
+        position: relative;
+        overflow: hidden;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.6s ease-out;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .bug-card.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .bug-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: -1;
+        opacity: 0.5;
+        transition: opacity 0.3s ease;
+    }
+
+    .bug-card:nth-child(4n+1)::before {
+        background: var(--highlight-blue);
+    }
+
+    .bug-card:nth-child(4n+2)::before {
+        background: var(--highlight-purple);
+    }
+
+    .bug-card:nth-child(4n+3)::before {
+        background: var(--highlight-green);
+    }
+
+    .bug-card:nth-child(4n+4)::before {
+        background: rgba(255, 149, 0, 0.1);
+    }
+
+    .bug-card:hover::before {
+        opacity: 0.8;
+    }
+
+    .bug-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        line-height: 1.3;
+    }
+
+    .bug-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .bug-tag {
+        padding: 0.3rem 0.8rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .bug-info {
+        margin-top: 1rem;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .bug-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .action-button {
+        padding: 0.5rem 1rem;
+        border-radius: 15px;
+        font-size: 0.9rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .action-button:hover {
+        transform: translateY(-2px);
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.6s ease-out;
+    }
+
+    .pagination.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .page-button {
+        padding: 0.5rem 1rem;
+        border-radius: 15px;
+        background: white;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .page-button:hover {
+        background: rgba(0, 0, 0, 0.05);
+    }
+
+    .page-button.active {
+        background: #000;
+        color: white;
+    }
+
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 3rem;
         }
-    {% endfor %}
-    return url;
-}
 
-laypage.render({
-    elem: 'page',
-    count: {{ bugs.total }},
-    limit: {{ bugs.per_page }},
-    curr: {{ bugs.page }},
-    layout: ['count', 'prev', 'page', 'next'],
-    jump: function(obj, first){
-        if(!first){
-            location.href = buildPageUrl(obj.curr);
+        .hero-stats {
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .bento-grid {
+            grid-template-columns: 1fr;
         }
     }
-});
-{% endif %}
+</style>
+{% endblock %}
 
-function deleteBug(id) {
-    layer.confirm('确定要删除这个Bug吗？', {
-        btn: ['确定','取消']
-    }, function(){
-        var form = document.getElementById('deleteForm');
-        form.action = '/bug/' + id + '/delete';
-        form.submit();
+{% block content %}
+<div class="bug-container">
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <h1 class="hero-title">Bug管理</h1>
+        <div class="hero-stats">
+            <div class="stat-item">
+                <div class="stat-number">{{ bugs.total }}</div>
+                <div class="stat-label">总数</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ bugs.items|selectattr('status', 'equalto', '待处理')|list|length }}</div>
+                <div class="stat-label">待处理</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ bugs.items|selectattr('status', 'equalto', '处理中')|list|length }}</div>
+                <div class="stat-label">处理中</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Search Section -->
+    <section class="search-section">
+        <form method="get" class="search-form">
+            <select name="project_id" class="form-select">
+                <option value="">选择项目</option>
+                {% for project in projects %}
+                <option value="{{ project.id }}" {% if project.id|string == request.args.get('project_id', '') %}selected{% endif %}>
+                    {{ project.name }}
+                </option>
+                {% endfor %}
+            </select>
+            
+            <select name="status" class="form-select">
+                <option value="">状态</option>
+                <option value="待处理" {% if request.args.get('status') == '待处理' %}selected{% endif %}>待处理</option>
+                <option value="处理中" {% if request.args.get('status') == '处理中' %}selected{% endif %}>处理中</option>
+                <option value="返回待补充" {% if request.args.get('status') == '返回待补充' %}selected{% endif %}>返回待补充</option>
+                <option value="更新完成" {% if request.args.get('status') == '更新完成' %}selected{% endif %}>更新完成</option>
+                <option value="已关闭" {% if request.args.get('status') == '已关闭' %}selected{% endif %}>已关闭</option>
+            </select>
+            
+            <select name="priority" class="form-select">
+                <option value="">优先级</option>
+                <option value="高" {% if request.args.get('priority') == '高' %}selected{% endif %}>高</option>
+                <option value="中" {% if request.args.get('priority') == '中' %}selected{% endif %}>中</option>
+                <option value="低" {% if request.args.get('priority') == '低' %}selected{% endif %}>低</option>
+            </select>
+            
+            <select name="type" class="form-select">
+                <option value="">类型</option>
+                <option value="BUG" {% if request.args.get('type') == 'BUG' %}selected{% endif %}>BUG</option>
+                <option value="REQUIREMENT" {% if request.args.get('type') == 'REQUIREMENT' %}selected{% endif %}>需求</option>
+            </select>
+            
+            <select name="category" class="form-select">
+                <option value="">分类</option>
+                <option value="功能" {% if request.args.get('category') == '功能' %}selected{% endif %}>功能</option>
+                <option value="界面" {% if request.args.get('category') == '界面' %}selected{% endif %}>界面</option>
+                <option value="性能" {% if request.args.get('category') == '性能' %}selected{% endif %}>性能</option>
+                <option value="兼容性" {% if request.args.get('category') == '兼容性' %}selected{% endif %}>兼容性</option>
+                <option value="其他" {% if request.args.get('category') == '其他' %}selected{% endif %}>其他</option>
+            </select>
+            
+            <input type="text" name="keyword" class="form-control" placeholder="搜索关键词" 
+                   value="{{ request.args.get('keyword', '') }}">
+            
+            <div class="search-buttons">
+                <button type="submit" class="action-button" style="background: #000; color: #fff;">搜索</button>
+                <a href="{{ url_for('bug.index') }}" class="action-button" style="background: rgba(0,0,0,0.1);">重置</a>
+                <a href="{{ url_for('bug.create') }}" class="action-button" style="background: #0066cc; color: #fff;">新建BUG</a>
+            </div>
+        </form>
+    </section>
+
+    <!-- Bug Cards Grid -->
+    {% if bugs.items %}
+    <div class="bento-grid">
+        {% for bug in bugs.items %}
+        <div class="bug-card">
+            <h3 class="bug-title">
+                <a href="{{ url_for('bug.detail', id=bug.id) }}" style="color: inherit; text-decoration: none;">
+                    {{ bug.title }}
+                </a>
+            </h3>
+            <div class="bug-meta">
+                <span class="bug-tag" style="background: rgba(0,102,204,0.1);">{{ bug.project.name }}</span>
+                <span class="bug-tag" style="background: {% if bug.status == '待处理' %}rgba(255,59,48,0.1){% elif bug.status == '处理中' %}rgba(255,149,0,0.1){% elif bug.status == '已关闭' %}rgba(52,199,89,0.1){% else %}rgba(0,0,0,0.1){% endif %}">
+                    {{ bug.status }}
+                </span>
+                <span class="bug-tag" style="background: {% if bug.priority == '高' %}rgba(255,59,48,0.1){% elif bug.priority == '中' %}rgba(255,149,0,0.1){% else %}rgba(52,199,89,0.1){% endif %}">
+                    {{ bug.priority }}优先级
+                </span>
+            </div>
+            <div class="bug-info">
+                {{ bug.description[:100] + '...' if bug.description and bug.description|length > 100 else bug.description or '暂无描述' }}
+            </div>
+            <div class="bug-info">
+                <small>
+                    创建人: {{ bug.creator.username }} | 
+                    创建时间: {{ bug.created_at.strftime('%Y-%m-%d %H:%M') }}
+                </small>
+            </div>
+            <div class="bug-actions">
+                <a href="{{ url_for('bug.detail', id=bug.id) }}" class="action-button" style="background: rgba(0,102,204,0.1);">查看详情</a>
+                <a href="{{ url_for('bug.edit', id=bug.id) }}" class="action-button" style="background: rgba(0,0,0,0.1);">编辑</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <p class="empty-state-text">暂无BUG记录</p>
+        <a href="{{ url_for('bug.create') }}" class="action-button" style="background: #0066cc; color: #fff;">创建BUG</a>
+    </div>
+    {% endif %}
+
+    <!-- Pagination -->
+    {% if bugs.pages > 1 %}
+    <div class="pagination">
+        {% if bugs.has_prev %}
+        <a href="{{ url_for('bug.index', page=bugs.prev_num, **request.args) }}" class="page-button">上一页</a>
+        {% endif %}
+        
+        {% for page in bugs.iter_pages() %}
+            {% if page %}
+                <a href="{{ url_for('bug.index', page=page, **request.args) }}" 
+                   class="page-button {% if page == bugs.page %}active{% endif %}">
+                    {{ page }}
+                </a>
+            {% else %}
+                <span class="page-button" style="pointer-events: none;">...</span>
+            {% endif %}
+        {% endfor %}
+        
+        {% if bugs.has_next %}
+        <a href="{{ url_for('bug.index', page=bugs.next_num, **request.args) }}" class="page-button">下一页</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 初始化显示动画
+    setTimeout(() => {
+        document.querySelector('.hero-section').classList.add('visible');
+        document.querySelector('.search-section').classList.add('visible');
+        document.querySelectorAll('.bug-card').forEach((card, index) => {
+            setTimeout(() => {
+                card.classList.add('visible');
+            }, 100 * (index + 1));
+        });
+        if (document.querySelector('.pagination')) {
+            document.querySelector('.pagination').classList.add('visible');
+        }
+    }, 100);
+
+    // 滚动动画
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, {
+        threshold: 0.1
     });
-}
+
+    document.querySelectorAll('.bug-card').forEach(card => {
+        observer.observe(card);
+    });
+});
+</script>
 {% endblock %}

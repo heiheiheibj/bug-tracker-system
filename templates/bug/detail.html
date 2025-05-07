@@ -8,7 +8,7 @@
         <div class="layui-card-header">
             <div class="layui-row">
                 <div class="layui-col-md8">
-                    <h2>Bug #{{ bug.id }}: {{ bug.title }}</h2>
+                    <h2>任务/事件详情 #{{ bug.id }}: {{ bug.title }}</h2>
                 </div>
                 <div class="layui-col-md4" style="text-align: right;">
                     {% if current_user.is_admin or current_user.id == bug.creator_id %}
@@ -30,7 +30,7 @@
                     <!-- Bug描述 -->
                     <fieldset class="layui-elem-field">
                         <legend>描述</legend>
-                        <div class="layui-field-box">
+                        <div class="layui-field-box" id="description">
                             {{ bug.description | nl2br }}
                         </div>
                     </fieldset>
@@ -144,7 +144,7 @@
                                                     <i class="layui-icon layui-icon-eye"></i>预览
                                                 </a>
                                                 {% endif %}
-                                                {% if current_user.is_admin or current_user.id == attachment.uploader_id or current_user.id == bug.creator_id %}
+                                                {% if current_user.is_admin or current_user.id == attachment.uploader_id %}
                                                 <button type="button" onclick="deleteAttachment({{ attachment.id }})" 
                                                         class="layui-btn layui-btn-xs layui-btn-danger">
                                                     <i class="layui-icon layui-icon-delete"></i>删除
@@ -168,38 +168,35 @@
 </div>
 
 <!-- 评论区域 -->
-<div class="layui-row" style="margin-top: 20px;">
-    <div class="layui-container">
-        <fieldset class="layui-elem-field">
-            <legend>评论</legend>
-            <div class="layui-field-box">
-                <table class="layui-table" lay-size="lg">
-                    <colgroup>
-                        <col width="60%">
-                        <col width="8%">
-                        <col width="15%">
-                        <col width="15%">
-
-                    </colgroup>
-                    <thead>
-                        <tr>
-                            <th>回复内容</th>
-                            <th>回复人</th>
-                            <th>回复时间</th>
-                            <th>附件</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for comment in bug.comments|sort(attribute='created_at') %}
-                        <tr>
-                            <td>{{ comment.content }}</td>
-                            <td>{{ comment.author.username }}</td>
-                            <td>{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                            <td>
-                                {% if comment.attachments %}
-                                <div style="margin-top: 10px;">
-                                    <!-- <span style="color: #999;"></span> -->
-                                    {% for attachment in comment.attachments %}
+<div class="layui-container">
+    <div class="layui-card">
+        <div class="layui-row" style="margin-top: 20px;">
+            <div class="layui-col-md12">
+                <fieldset class="layui-elem-field">
+                    <legend>附件列表</legend>
+                    <div class="layui-field-box">
+                        {% if bug.attachments %}
+                        <table class="layui-table" lay-size="lg">
+                            <colgroup>
+                                <col width="60%">
+                                <col width="8%">
+                                <col width="12%">
+                                <col width="20%">
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th>回复内容</th>
+                                    <th>回复人</th>
+                                    <th>发布时间</th>
+                                    <th>附件</th>
+                                </tr>
+                            </thead>
+                            {% for comment in bug.comments|sort(attribute='created_at') %}
+                            <tbody>
+                                <td>{{ comment.content }}</td>
+                                <td>{{ comment.author.username }}</td>
+                                <td>{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }} </td>
+                                <td>{% for attachment in comment.attachments %}
                                     <div style="margin-top: 5px;">
                                         <a href="{{ url_for('bug.download_attachment', id=attachment.id) }}" target="_blank">
                                             <i class="layui-icon layui-icon-file"></i> {{ attachment.filename }}
@@ -208,17 +205,15 @@
                                             {{ attachment.get_file_size_display() }}
                                         </span>
                                     </div>
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
-                            </td>                            
-                        </tr>
-                    
-                        {% endfor %}
-                    </tbody>
-                </table>
+                                    {% endfor %}</td>
+                            </tbody>
+                            {% endfor %}
+                        </table>
+                        {% endif %}
+                    </div>
+                </fieldset>
             </div>
-        </fieldset>
+        </div>
     </div>
 </div>
 
@@ -228,40 +223,51 @@
     <div class="layui-container">
         <form class="layui-form" method="post" enctype="multipart/form-data" action="{{ url_for('bug.detail', id=bug.id) }}">
             <div class="layui-form-item">
-                <label class="layui-form-label">状态</label>
-                <div class="layui-input-block">
-                    <select name="status" lay-verify="required">
-                        <option value="待处理" {% if bug.status == '待处理' %}selected{% endif %}>待处理</option>
-                        <option value="处理中" {% if bug.status == '处理中' %}selected{% endif %}>处理中</option>
-                        <option value="已关闭" {% if bug.status == '已关闭' %}selected{% endif %}>已关闭</option>
-                    </select>
+                <div class="layui-row">
+                    <!-- 状态选择列 -->
+                    <div class="layui-col-xs12 layui-col-sm3" style="padding-right: 10px;">
+                        <select name="status" lay-verify="required" style="width: 100%;">
+                            <option value="待处理" {% if bug.status == '待处理' %}selected{% endif %}>待处理</option>
+                            <option value="处理中" {% if bug.status == '处理中' %}selected{% endif %}>处理中</option>
+                            <option value="已关闭" {% if bug.status == '已关闭' %}selected{% endif %}>已关闭</option>
+                        </select>
+                    </div>
+                    
+                    <!-- 文件上传列 -->
+                    <div class="layui-col-xs12 layui-col-sm6">
+                        <div class="layui-upload">
+                            <button type="button" class="layui-btn layui-btn-normal" id="upload-btn">
+                                <i class="layui-icon"></i>选择文件
+                            </button>
+                            <input type="file" name="files" multiple class="layui-upload-file" id="comment-upload" style="display:none;">
+                        </div>
+                        
+                    </div>
+                    
+                    <!-- 提交按钮列 -->
+                    <div class="layui-col-xs12 layui-col-sm3">
+                       
+                            <div id="file-list"></div>
+                        
+                    </div>
                 </div>
             </div>
             
+            <!-- 评论内容单独一行 -->
             <div class="layui-form-item layui-form-text">
-                <textarea name="content" placeholder="请输入评论内容" class="layui-textarea"></textarea>
+                <textarea name="content" placeholder="请输入回复内容" class="layui-textarea"></textarea>
             </div>
 
-            <div class="layui-form-item">
-                <div class="layui-col-md12">
-                    <div class="layui-upload">
-                        <button type="button" class="layui-btn layui-btn-normal" id="upload-btn">
-                            <i class="layui-icon"></i>选择文件
-                        </button>
-                        <input type="file" name="files" multiple class="layui-upload-file" id="comment-upload" style="display:none;">
-                        <button class="layui-btn" lay-submit style="margin-left: 10px;">提交评论</button>
-                    </div>
-                    <div class="layui-upload-list">
-                        <div id="file-list"></div>
-                    </div>
-                </div>
-            </div>
-
+            <!-- 进度条 -->
             <div class="layui-form-item">
                 <div class="layui-progress layui-progress-big" lay-filter="upload-progress" style="display:none;">
                     <div class="layui-progress-bar" lay-percent="0%"></div>
                 </div>
             </div>
+
+            <div class="layui-form-item">
+                <button class="layui-btn" lay-submit style="width: 100%;">提交回复</button>
+            </div>            
         </form>
         
         <script>
@@ -377,4 +383,7 @@ function previewImage(src) {
         anim: 5
     });
 }
+
+    document.getElementById('description').innerHTML = 
+        document.getElementById('description').textContent.replace(/\r\n/g, '<br>');
 {% endblock %}

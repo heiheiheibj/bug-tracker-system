@@ -88,10 +88,19 @@ def creator_or_admin_required(model):
             # 获取资源实例
             instance = model.query.get_or_404(kwargs.get('id'))
             
-            # 检查是否是创建者或管理员
-            if not (current_user.id == instance.creator_id or current_user.is_admin):
-                flash('只有创建者或管理员可以执行此操作')
-                abort(403)
+            # 判断是否有 instance.creator_id 属性
+
+
+            if not hasattr(instance, 'creator_id'):
+                if not (current_user.is_admin):
+                    flash('只有管理员可以执行此操作')
+                    abort(403)                
+            else:
+                # 检查是否是创建者或管理员
+                if not (current_user.id == instance.creator_id or current_user.is_admin):
+                    flash('只有创建者或管理员可以执行此操作')
+                    abort(403)
+            
                 
             return f(*args, **kwargs)
         return decorated_function

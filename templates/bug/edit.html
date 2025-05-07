@@ -2,233 +2,401 @@
 
 {% block title %}编辑Bug{% endblock %}
 
-{% block content %}
-<div class="layui-container">
-        <div class="layui-card-header">编辑 #{{ bug.id }}</div>
-        <div class="layui-card-body">
-            <form class="layui-form" method="post" enctype="multipart/form-data">
-                <div class="layui-form-item">
-                    <label class="layui-form-label">标题</label>
-                    <div class="layui-input-block">
-                        <input type="text" name="title" required lay-verify="required" 
-                               placeholder="请输入Bug标题" class="layui-input" 
-                               value="{{ bug.title }}">
-                    </div>
-                </div>
+{% block head %}
+<style>
+    .edit-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
 
-                <div class="layui-form-item">
-                    <label class="layui-form-label">描述</label>
-                    <div class="layui-input-block">
-                        <textarea name="description" required lay-verify="required" 
-                                  placeholder="请详细描述Bug的表现、复现步骤等" 
-                                  class="layui-textarea" style="height: 200px;">{{ bug.description }}</textarea>
-                    </div>
-                </div>
+    .hero-section {
+        /*height: 30vh;*/
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.8s ease-out;
+    }
 
-                <div class="layui-form-item">
-                    <label class="layui-form-label">优先级</label>
-                    <div class="layui-input-inline">
-                        <select name="priority" required lay-verify="required">
-                            <option value="">请选择优先级</option>
-                            <option value="高" {% if bug.priority == '高' %}selected{% endif %}>高</option>
-                            <option value="中" {% if bug.priority == '中' %}selected{% endif %}>中</option>
-                            <option value="低" {% if bug.priority == '低' %}selected{% endif %}>低</option>
-                        </select>
-                    </div>
-                </div>
+    .hero-section.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
 
-                <div class="layui-form-item">
-                    <label class="layui-form-label">状态</label>
-                    <div class="layui-input-inline">
-                        <select name="status" required lay-verify="required">
-                            <option value="">请选择状态</option>
-                            <option value="待处理" {% if bug.status == '待处理' %}selected{% endif %}>待处理</option>
-                            <option value="处理中" {% if bug.status == '处理中' %}selected{% endif %}>处理中</option>
-                            <option value="返回待补充" {% if bug.status == '返回待补充' %}selected{% endif %}>返回待补充</option>
-                            <option value="更新完成" {% if bug.status == '更新完成' %}selected{% endif %}>更新完成</option>
-                            <option value="已关闭" {% if bug.status == '已关闭' %}selected{% endif %}>已关闭</option>
-                        </select>
-                    </div>
-                </div>
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, #000 0%, #333 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
 
-                <div class="layui-form-item">
-                    <label class="layui-form-label">项目</label>
-                    <div class="layui-input-inline">
-                        <select name="project_id" required lay-verify="required">
-                            <option value="">请选择项目</option>
-                            {% for project in projects %}
-                            <option value="{{ project.id }}" {% if bug.project_id == project.id %}selected{% endif %}>{{ project.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
+    .hero-subtitle {
+        font-size: 1.2rem;
+        color: var(--text-secondary);
+    }
 
-                <div class="layui-form-item">
-                    <label class="layui-form-label">类别</label>
-                    <div class="layui-input-inline">
-                        <select name="category" required lay-verify="required">
-                            <option value="">请选择类别</option>
-                            <option value="功能" {% if bug.category == '功能' %}selected{% endif %}>功能</option>
-                            <option value="界面" {% if bug.category == '界面' %}selected{% endif %}>界面</option>
-                            <option value="性能" {% if bug.category == '性能' %}selected{% endif %}>性能</option>
-                            <option value="兼容性" {% if bug.category == '兼容性' %}selected{% endif %}>兼容性</option>
-                            <option value="其他" {% if bug.category == '其他' %}selected{% endif %}>其他</option>
-                        </select>
-                    </div>
-                </div>
+    .form-section {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.6s ease-out;
+    }
 
-                <div class="layui-form-item">
-                    <label class="layui-form-label">类型</label>
-                    <div class="layui-input-inline">
-                        <select name="type" required lay-verify="required">
-                            <option value="">请选择类型</option>
-                            <option value="BUG" {% if bug.type == 'BUG' %}selected{% endif %}>BUG</option>
-                            <option value="REQUIREMENT" {% if bug.type == 'REQUIREMENT' %}selected{% endif %}>需求</option>
-                        </select>
-                    </div>
-                </div>
+    .form-section.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
 
-                <div class="layui-form-item">
-                    <label class="layui-form-label">现有附件</label>
-                    <div class="layui-input-block">
-                        {% if bug.attachments %}
-                        <table class="layui-table">
-                            <thead>
-                                <tr>
-                                    <th>文件名</th>
-                                    <th>大小</th>
-                                    <th>上传时间</th>
-                                    <th>上传者</th>
-                                    <th>操作</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for attachment in bug.attachments %}
-                                <tr>
-                                    <td>{{ attachment.filename }}</td>
-                                    <td>{{ attachment.get_file_size_display() }}</td>
-                                    <td>{{ attachment.upload_time.strftime('%Y-%m-%d %H:%M') }}</td>
-                                    <td>{{ attachment.uploader.username }}</td>
-                                    <td>
-                                        <div class="layui-btn-group">
-                                            <a href="{{ url_for('bug.download_attachment', id=attachment.id) }}" 
-                                               class="layui-btn layui-btn-xs">
-                                                <i class="layui-icon layui-icon-download-circle"></i>下载
-                                            </a>
-                                            {% if attachment.is_previewable() %}
-                                            <a href="{{ url_for('bug.preview_attachment', id=attachment.id) }}" 
-                                               target="_blank" class="layui-btn layui-btn-xs layui-btn-normal">
-                                                <i class="layui-icon layui-icon-eye"></i>预览
-                                            </a>
-                                            {% endif %}
-                                            {% if current_user.is_admin or current_user.id == attachment.uploader_id or current_user.id == bug.creator_id %}
-                                            <button type="button" onclick="deleteAttachment({{ attachment.id }})" 
-                                                    class="layui-btn layui-btn-xs layui-btn-danger">
-                                                <i class="layui-icon layui-icon-delete"></i>删除
-                                            </button>
-                                            {% endif %}
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                        {% else %}
-                        <div class="layui-form-mid layui-word-aux">暂无附件</div>
-                        {% endif %}
-                    </div>
-                </div>
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
 
-                <div class="layui-form-item">
-                    <label class="layui-form-label">上传新附件</label>
-                    <div class="layui-input-block">
-                        <button type="button" class="layui-btn" id="fileUpload">
-                            <i class="layui-icon layui-icon-upload"></i> 选择文件
-                        </button>
-                        <div class="layui-upload-list">
-                            <table class="layui-table">
-                                <thead>
-                                    <tr>
-                                        <th>文件名</th>
-                                        <th>大小</th>
-                                        <th>状态</th>
-                                        <th>操作</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="fileList"></tbody>
-                            </table>
-                        </div>
-                        <div class="layui-form-mid layui-word-aux">
-                            支持的文件类型：图片(jpg/png/webp)、文档(doc/pdf/txt)、压缩包(zip/rar)等<br>
-                            单个文件大小限制：100MB
-                        </div>
-                    </div>
-                </div>
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
 
-                <div class="layui-form-item">
-                    <div class="layui-input-block">
-                        <button class="layui-btn" lay-submit>保存</button>
-                        <a href="{{ url_for('bug.detail', id=bug.id) }}" class="layui-btn layui-btn-primary">返回</a>
-                    </div>
-                </div>
+    .form-label {
+        display: block;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+    }
 
-                <!-- 删除附件的表单 -->
-                <form id="deleteAttachmentForm" method="post" style="display: none;"></form>
-            </form>
-        </div>
-    </div>
-</div>
+    .form-control {
+        width: 100%;
+        padding: 0.8rem;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        background: white;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: #0066cc;
+        box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
+        outline: none;
+    }
+
+    textarea.form-control {
+        min-height: 200px;
+        resize: vertical;
+    }
+
+    .attachment-section {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .attachment-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 1rem;
+    }
+
+    .attachment-table th,
+    .attachment-table td {
+        padding: 0.8rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .attachment-table th {
+        text-align: left;
+        font-weight: 500;
+        color: var(--text-secondary);
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .action-button {
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .action-button:hover {
+        transform: translateY(-2px);
+    }
+
+    .action-button.primary {
+        background: #0066cc;
+        color: white;
+    }
+
+    .action-button.secondary {
+        background: rgba(0, 0, 0, 0.1);
+        color: var(--text-primary);
+    }
+
+    .action-button.danger {
+        background: rgba(255, 59, 48, 0.1);
+        color: #ff3b30;
+    }
+
+    .file-upload {
+        margin-top: 1rem;
+    }
+
+    .file-list {
+        margin-top: 1rem;
+    }
+
+    .help-text {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        margin-top: 0.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.5rem;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
 {% endblock %}
 
-{% block script %}
-layui.use(['upload'], function(){
-    var upload = layui.upload;
-    
-    // 文件选择功能
-    upload.render({
-        elem: '#fileUpload',
-        url: '#',
-        auto: false,
-        accept: 'file',   
-        multiple: false,
-        bindAction: false,
-        choose: function(obj){
-            var files = obj.pushFile();
-            
-            // 预览选择的文件
-            obj.preview(function(index, file, result){
-                var tr = $(['<tr id="upload-'+ index +'">'
-                    ,'<td>'+ file.name +'</td>'
-                    ,'<td>'+ (file.size/1024).toFixed(1) +'kb</td>'
-                    ,'<td>待上传</td>'
-                    ,'<td>'
-                    ,'<button type="button" class="layui-btn layui-btn-xs layui-btn-danger file-delete">删除</button>'
-                    ,'</td>'
-                    ,'</tr>'].join(''));
-                
-                // 删除按钮事件
-                tr.find('.file-delete').on('click', function(){
-                    delete files[index];
-                    tr.remove();
-                });
-                
-                // 创建隐藏的文件输入
-                var input = $('<input type="file" name="files" style="display:none;">');
-                var dataTransfer = new DataTransfer();
-                dataTransfer.items.add(file);
-                input[0].files = dataTransfer.files;
-                
-                // 添加到表单
-                $('form').append(input);
-                
-                $('#fileList').append(tr);
-            });
-        }
-    });
-});
+{% block content %}
+<div class="edit-container">
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <!-- <h1 class="hero-title">编辑 Bug #{{ bug.id }}</h1> -->
+        <p class="hero-subtitle">编辑 任务/事件 #{{ bug.id }} {{ bug.project.name }} -- {{ bug.title }}</p>
+    </section>
 
-form.on('submit()', function(data){
-    return true;
+    <!-- Form Section -->
+    <form class="form-section" method="post" enctype="multipart/form-data">
+        <!-- Basic Info -->
+        <div class="form-grid">
+            <div class="form-group">
+                <label class="form-label">标题</label>
+                <input type="text" name="title" class="form-control" required 
+                       value="{{ bug.title }}" placeholder="请输入Bug标题">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">项目</label>
+                <select name="project_id" class="form-control" required>
+                    <option value="">请选择项目</option>
+                    {% for project in projects %}
+                    <option value="{{ project.id }}" {% if bug.project_id == project.id %}selected{% endif %}>
+                        {{ project.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">优先级</label>
+                <select name="priority" class="form-control" required>
+                    <option value="">请选择优先级</option>
+                    <option value="高" {% if bug.priority == '高' %}selected{% endif %}>高</option>
+                    <option value="中" {% if bug.priority == '中' %}selected{% endif %}>中</option>
+                    <option value="低" {% if bug.priority == '低' %}selected{% endif %}>低</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">状态</label>
+                <select name="status" class="form-control" required>
+                    <option value="">请选择状态</option>
+                    <option value="待处理" {% if bug.status == '待处理' %}selected{% endif %}>待处理</option>
+                    <option value="处理中" {% if bug.status == '处理中' %}selected{% endif %}>处理中</option>
+                    <option value="返回待补充" {% if bug.status == '返回待补充' %}selected{% endif %}>返回待补充</option>
+                    <option value="更新完成" {% if bug.status == '更新完成' %}selected{% endif %}>更新完成</option>
+                    <option value="已关闭" {% if bug.status == '已关闭' %}selected{% endif %}>已关闭</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">类别</label>
+                <select name="category" class="form-control" required>
+                    <option value="">请选择类别</option>
+                    <option value="功能" {% if bug.category == '功能' %}selected{% endif %}>功能</option>
+                    <option value="界面" {% if bug.category == '界面' %}selected{% endif %}>界面</option>
+                    <option value="性能" {% if bug.category == '性能' %}selected{% endif %}>性能</option>
+                    <option value="兼容性" {% if bug.category == '兼容性' %}selected{% endif %}>兼容性</option>
+                    <option value="其他" {% if bug.category == '其他' %}selected{% endif %}>其他</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">类型</label>
+                <select name="type" class="form-control" required>
+                    <option value="">请选择类型</option>
+                    <option value="BUG" {% if bug.type == 'BUG' %}selected{% endif %}>BUG</option>
+                    <option value="REQUIREMENT" {% if bug.type == 'REQUIREMENT' %}selected{% endif %}>需求</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">描述</label>
+            <textarea name="description" class="form-control" required 
+                      placeholder="请详细描述Bug的表现、复现步骤等">{{ bug.description }}</textarea>
+        </div>
+
+        <!-- Attachments Section -->
+        <div class="attachment-section">
+            <h3 style="margin-bottom: 1rem;">现有附件</h3>
+            {% if bug.attachments %}
+            <table class="attachment-table">
+                <thead>
+                    <tr>
+                        <th>文件名</th>
+                        <th>大小</th>
+                        <th>上传时间</th>
+                        <th>上传者</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for attachment in bug.attachments %}
+                    <tr>
+                        <td>{{ attachment.filename }}</td>
+                        <td>{{ attachment.get_file_size_display() }}</td>
+                        <td>{{ attachment.upload_time.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ attachment.uploader.username }}</td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="{{ url_for('bug.download_attachment', id=attachment.id) }}" 
+                                   class="action-button secondary">
+                                    <i class="layui-icon layui-icon-download-circle"></i> 下载
+                                </a>
+                                {% if attachment.is_previewable() %}
+                                <a href="{{ url_for('bug.preview_attachment', id=attachment.id) }}" 
+                                   target="_blank" class="action-button secondary">
+                                    <i class="layui-icon layui-icon-eye"></i> 预览
+                                </a>
+                                {% endif %}
+                                {% if current_user.is_admin or current_user.id == attachment.uploader_id or current_user.id == bug.creator_id %}
+                                <button type="button" onclick="deleteAttachment({{ attachment.id }})" 
+                                        class="action-button danger">
+                                    <i class="layui-icon layui-icon-delete"></i> 删除
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="help-text">暂无附件</p>
+            {% endif %}
+
+            <div class="file-upload">
+                <h3 style="margin-bottom: 1rem;">上传新附件</h3>
+                <button type="button" class="action-button secondary" id="fileUpload">
+                    <i class="layui-icon layui-icon-upload"></i> 选择文件
+                </button>
+                <div class="file-list">
+                    <table class="attachment-table">
+                        <thead>
+                            <tr>
+                                <th>文件名</th>
+                                <th>大小</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fileList"></tbody>
+                    </table>
+                </div>
+                <p class="help-text">
+                    支持的文件类型：图片(jpg/png/webp)、文档(doc/pdf/txt)、压缩包(zip/rar)等<br>
+                    单个文件大小限制：100MB
+                </p>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div style="text-align: center;">
+            <button type="submit" class="action-button primary">保存更改</button>
+            <a href="{{ url_for('bug.detail', id=bug.id) }}" class="action-button secondary">返回</a>
+        </div>
+    </form>
+
+    <!-- Delete Attachment Form -->
+    <form id="deleteAttachmentForm" method="post" style="display: none;"></form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 初始化显示动画
+    setTimeout(() => {
+        document.querySelector('.hero-section').classList.add('visible');
+        document.querySelector('.form-section').classList.add('visible');
+    }, 100);
+
+    // 文件上传处理
+    layui.use(['upload'], function(){
+        var upload = layui.upload;
+        
+        upload.render({
+            elem: '#fileUpload',
+            url: '#',
+            auto: false,
+            accept: 'file',   
+            multiple: false,
+            bindAction: false,
+            choose: function(obj){
+                var files = obj.pushFile();
+                
+                obj.preview(function(index, file, result){
+                    var tr = $(['<tr id="upload-'+ index +'">'
+                        ,'<td>'+ file.name +'</td>'
+                        ,'<td>'+ (file.size/1024).toFixed(1) +'kb</td>'
+                        ,'<td>待上传</td>'
+                        ,'<td>'
+                        ,'<button type="button" class="action-button danger file-delete">删除</button>'
+                        ,'</td>'
+                        ,'</tr>'].join(''));
+                    
+                    tr.find('.file-delete').on('click', function(){
+                        delete files[index];
+                        tr.remove();
+                    });
+                    
+                    var input = $('<input type="file" name="files" style="display:none;">');
+                    var dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    input[0].files = dataTransfer.files;
+                    
+                    $('form').append(input);
+                    
+                    $('#fileList').append(tr);
+                });
+            }
+        });
+    });
 });
 
 function deleteAttachment(id) {
@@ -240,4 +408,5 @@ function deleteAttachment(id) {
         form.submit();
     });
 }
+</script>
 {% endblock %}

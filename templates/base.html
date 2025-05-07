@@ -6,21 +6,81 @@
     <title>{% block title %}{% endblock %} - Bug管理系统</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/layui.css') }}">
     <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --header-height: 60px;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .layui-layout-admin .layui-body {
+            padding: 0;
+            overflow-x: hidden;
+            background: #f5f5f7;
+        }
+
+        .layui-header {
+            background: rgba(255, 255, 255, 0.8) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            height: var(--header-height);
+        }
+
+        .layui-nav {
+            background: transparent;
+        }
+
+        .layui-nav .layui-nav-item a {
+            color: #1d1d1f;
+        }
+
+        .layui-nav .layui-nav-item a:hover {
+            color: #0066cc;
+        }
+
+        .layui-logo {
+            color: #1d1d1f !important;
+            font-weight: 600;
+        }
+
+        .layui-layout-admin .layui-header .layui-nav .layui-nav-item {
+            height: var(--header-height);
+            line-height: var(--header-height);
+        }
+
+        .layui-layout-admin .layui-header .layui-nav .layui-nav-item .layui-nav-child {
+            top: var(--header-height);
+        }
+
+        .layui-nav .layui-this:after, 
+        .layui-nav-bar {
+            background-color: #0066cc;
+        }
+
+        {% block head %}{% endblock %}
+    </style>
 </head>
 <body>
     <div class="layui-layout layui-layout-admin">
         <div class="layui-header">
-            <div class="layui-logo layui-hide-xs">Bug管理系统</div>
+            <div class="layui-logo layui-hide-xs">任务/事件管理系统</div>
             {% if current_user.is_authenticated %}
             <ul class="layui-nav layui-layout-left">
                 <li class="layui-nav-item">
-                    <a href="{{ url_for('bug.index') }}">Bug列表</a>
+                    <a href="{{ url_for('bug.index') }}">任务/事件列表</a>
                 </li>
                 <li class="layui-nav-item">
                     <a href="{{ url_for('project.index') }}">项目管理</a>
                 </li>
                 <li class="layui-nav-item">
-                    <a href="{{ url_for('bug.create') }}">提交Bug</a>
+                    <a href="{{ url_for('bug.create') }}">提交任务/事件</a>
                 </li>
                 {% if current_user.is_admin %}
                 <li class="layui-nav-item">
@@ -45,7 +105,7 @@
             {% endif %}
         </div>
 
-        <div class="layui-body" style="padding: 15px;">
+        <div class="layui-body">
             {% with messages = get_flashed_messages() %}
             {% if messages %}
             <div class="layui-container" style="margin-bottom: 15px;">

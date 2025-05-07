@@ -33,20 +33,25 @@ def create():
 
 @bp.route('/project/<int:id>/edit', methods=['GET', 'POST'])
 @login_required
+@active_required
 def edit(id):
     project = Project.query.get_or_404(id)
     if project.creator_id != current_user.id:
         flash('无权编辑此项目', 'error')
         return redirect(url_for('project.index'))
-        
-    if request.method == 'POST':
-        project.name = request.form.get('name') or project.name
-        project.description = request.form.get('description')
+    
+    form = ProjectForm()
+    if form.validate_on_submit():
+        project.name = form.name.data
+        project.description = form.description.data
         db.session.commit()
         flash('项目更新成功', 'success')
         return redirect(url_for('project.index'))
+    elif request.method == 'GET':
+        form.name.data = project.name
+        form.description.data = project.description
         
-    return render_template('project/edit.html', project=project)
+    return render_template('project/edit.html', form=form, project=project)
 
 @bp.route('/project/<int:id>/delete', methods=['POST'])
 @login_required

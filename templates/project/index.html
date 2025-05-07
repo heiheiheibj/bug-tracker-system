@@ -1,32 +1,265 @@
 {% extends "base.html" %}
 
+{% block head %}
+<style>
+    :root {
+        --highlight-blue: rgba(0, 122, 255, 0.1);
+        --highlight-purple: rgba(175, 82, 222, 0.1);
+        --highlight-green: rgba(52, 199, 89, 0.1);
+        --text-primary: #000;
+        --text-secondary: #6e6e73;
+    }
+
+    .project-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .hero-section {
+        /*height: 80vh;*/
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        margin-bottom: 2rem;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.8s ease-out;
+    }
+
+    .hero-section.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .hero-title {
+        font-size: 6rem;
+        font-weight: 700;
+        margin-bottom: 2rem;
+        background: linear-gradient(135deg, #000 0%, #333 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .create-button {
+        font-size: 1.2rem;
+        padding: 1rem 2rem;
+        border-radius: 50px;
+        background: #000;
+        color: #fff;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .create-button:hover {
+        transform: scale(1.05);
+        background: #333;
+        color: #fff;
+        text-decoration: none;
+    }
+
+    .bento-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        padding: 2rem 0;
+    }
+
+    .bento-item {
+        background: #fff;
+        border-radius: 20px;
+        padding: 2rem;
+        position: relative;
+        overflow: hidden;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.6s ease-out;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .bento-item.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .bento-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: -1;
+        opacity: 0.5;
+        transition: opacity 0.3s ease;
+    }
+
+    .bento-item:nth-child(3n+1)::before {
+        background: var(--highlight-blue);
+    }
+
+    .bento-item:nth-child(3n+2)::before {
+        background: var(--highlight-purple);
+    }
+
+    .bento-item:nth-child(3n+3)::before {
+        background: var(--highlight-green);
+    }
+
+    .bento-item:hover::before {
+        opacity: 0.8;
+    }
+
+    .project-name {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+    }
+
+    .project-description {
+        font-size: 1.1rem;
+        color: var(--text-secondary);
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+
+    .project-meta {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        margin-bottom: 1.5rem;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: auto;
+    }
+
+    .btn-edit, .btn-delete {
+        padding: 0.5rem 1.5rem;
+        border-radius: 25px;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-edit {
+        background: rgba(0, 0, 0, 0.1);
+        color: var(--text-primary);
+    }
+
+    .btn-delete {
+        background: rgba(255, 59, 48, 0.1);
+        color: #ff3b30;
+    }
+
+    .btn-edit:hover, .btn-delete:hover {
+        transform: translateY(-2px);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem;
+        background: var(--highlight-blue);
+        border-radius: 20px;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.6s ease-out;
+    }
+
+    .empty-state.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .empty-state-text {
+        font-size: 1.5rem;
+        color: var(--text-secondary);
+        margin-bottom: 2rem;
+    }
+
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 3rem;
+        }
+
+        .bento-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <h2>项目管理</h2>
-    <div class="mb-3">
-        <a href="{{ url_for('project.create') }}" class="btn btn-primary">新建项目</a>
-    </div>
-    
-    <div class="list-group">
+<div class="project-container">
+    <section class="hero-section">
+        <h1 class="hero-title">项目管理</h1>
+        <a href="{{ url_for('project.create') }}" class="create-button">
+            <i class="layui-icon layui-icon-add-1"></i> 创建新项目
+        </a>
+    </section>
+
+    {% if projects %}
+    <div class="bento-grid">
         {% for project in projects %}
-        <div class="list-group-item">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h5>{{ project.name }}</h5>
-                    <p class="mb-1 text-muted">{{ project.description or '暂无描述' }}</p>
-                    <small class="text-muted">创建于: {{ project.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
-                </div>
-                <div>
-                    <a href="{{ url_for('project.edit', id=project.id) }}" class="btn btn-sm btn-outline-secondary">编辑</a>
-                    <form action="{{ url_for('project.delete', id=project.id) }}" method="post" class="d-inline">
-                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('确定要删除这个项目吗？')">删除</button>
-                    </form>
-                </div>
+        <div class="bento-item">
+            <h2 class="project-name">{{ project.name }}</h2>
+            <p class="project-description">{{ project.description or '暂无描述' }}</p>
+            <div class="project-meta">
+               {{ project.creator.username }} 创建于: {{ project.created_at.strftime('%Y-%m-%d %H:%M') }}
+            </div>
+            <div class="action-buttons">
+                <a href="{{ url_for('project.edit', id=project.id) }}" class="btn-edit">编辑</a>
+                <form action="{{ url_for('project.delete', id=project.id) }}" method="post" class="d-inline">
+                    <button type="submit" class="btn-delete" onclick="return confirm('确定要删除这个项目吗？')">删除</button>
+                </form>
             </div>
         </div>
-        {% else %}
-        <div class="alert alert-info">暂无项目，请先创建项目</div>
         {% endfor %}
     </div>
+    {% else %}
+    <div class="empty-state">
+        <p class="empty-state-text">暂无项目，开始创建您的第一个项目吧！</p>
+        <a href="{{ url_for('project.create') }}" class="create-button">创建项目</a>
+    </div>
+    {% endif %}
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 初始化显示动画
+    setTimeout(() => {
+        document.querySelector('.hero-section').classList.add('visible');
+        document.querySelectorAll('.bento-item').forEach((item, index) => {
+            setTimeout(() => {
+                item.classList.add('visible');
+            }, 100 * (index + 1));
+        });
+        if (document.querySelector('.empty-state')) {
+            document.querySelector('.empty-state').classList.add('visible');
+        }
+    }, 100);
+
+    // 滚动动画
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, {
+        threshold: 0.1
+    });
+
+    document.querySelectorAll('.bento-item').forEach(item => {
+        observer.observe(item);
+    });
+});
+</script>
 {% endblock %}

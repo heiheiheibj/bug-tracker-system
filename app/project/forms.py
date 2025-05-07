@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, TextAreaField
+from wtforms import StringField, TextAreaField, SubmitField
 from wtforms.validators import DataRequired, Length
 
 class ProjectForm(FlaskForm):
@@ -10,3 +10,4 @@ class ProjectForm(FlaskForm):
     description = TextAreaField('项目描述', validators=[
         Length(max=500, message='项目描述不能超过500个字符')
     ])
+    submit = SubmitField('保存更改')
