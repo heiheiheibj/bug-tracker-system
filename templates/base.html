@@ -91,15 +91,19 @@
                 <li class="layui-nav-item">
                     <a href="{{ url_for('user.change_password') }}">修改密码</a>
                 </li>
+                <li class="layui-nav-item">
+                    <a href="/logout">退出登录</a>
+                </li>                
             </ul>
             <ul class="layui-nav layui-layout-right">
-                    <a href="javascript:;">
+                <li class="layui-nav-item">
                     <a href="javascript:;">
                         <i class="layui-icon layui-icon-username"></i>
                         {{ current_user.username }}
                     </a>
                     <dl class="layui-nav-child">
-                        <dd><a href="{{ url_for('auth.logout') }}">退出登录</a></dd>
+                        <dd><a href="{{ url_for('user.index') }}"><i class="layui-icon layui-icon-user"></i> 个人资料</a></dd>
+                        <dd><a href="{{ url_for('auth.logout') }}"><i class="layui-icon layui-icon-logout"></i> 退出登录</a></dd>
                     </dl>
                 </li>
             </ul>

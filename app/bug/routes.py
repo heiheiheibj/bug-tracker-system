@@ -4,13 +4,14 @@ from flask_login import login_required, current_user
 from app import db
 from app.bug import bp
 from app.models import Bug, Attachment, Project, Comment
-from app.decorators import admin_required, creator_or_admin_required, active_required, reply_bug_permission_required
+from app.decorators import admin_required, creator_or_admin_required, active_required, reply_bug_permission_required, create_bug_permission_required
 from app.utils.file_handler import process_upload, save_file
 
 
 @bp.route('/')
 @bp.route('/index')
 @login_required
+@active_required
 def index():
     page = request.args.get('page', 1, type=int)
     query = Bug.query
@@ -28,12 +29,25 @@ def index():
     if status:
         query = query.filter(Bug.status == status)
     
+    # 根据优先级筛选
+    priority = request.args.get('priority')
+    if priority:
+        query = query.filter(Bug.priority == priority)
+    
+    # 根据创建者筛选
+    creator_id = request.args.get('creator_id')
+    if creator_id:
+        query = query.filter(Bug.creator_id == creator_id)
+    
     keyword = request.args.get('keyword')
     if keyword:
         query = query.filter(Bug.title.contains(keyword))
     
-    # 获取所有项目用于搜索下拉框
-    projects = Project.query.all()
+    # 管理员可以查看所有项目，普通用户只能查看自己创建的项目
+    if current_user.is_admin:
+        projects = Project.query.all()
+    else:
+        projects = Project.query.filter_by(creator_id=current_user.id).all()
     
     bugs = query.order_by(Bug.created_at.desc()).paginate(
         page=page, per_page=10, error_out=False)
@@ -41,24 +55,26 @@ def index():
 
 @bp.route('/create', methods=['GET', 'POST'])
 @login_required
+@active_required
+@create_bug_permission_required
 def create():
-    from app.models import Project
-    
     if request.method == 'POST':
         title = request.form['title']
         description = request.form['description']
         priority = request.form['priority']
-        type = request.form['type']
         project_id = request.form['project_id']
+        bug_type = request.form['type']
+        category = request.form['category']
         
         bug = Bug(
             title=title,
             description=description,
             priority=priority,
             status='待处理',
-            type=type,
+            creator_id=current_user.id,
             project_id=project_id,
-            creator=current_user
+            type=bug_type,
+            category=category
         )
         
         db.session.add(bug)
@@ -95,7 +111,11 @@ def create():
         flash('Bug已创建')
         return redirect(url_for('bug.index'))
     
-    projects = Project.query.filter_by(creator_id=current_user.id).all()
+    # 管理员可以查看所有项目，普通用户只能查看自己创建的项目
+    if current_user.is_admin:
+        projects = Project.query.all()
+    else:
+        projects = Project.query.filter_by(creator_id=current_user.id).all()
     return render_template('bug/create.html', projects=projects)
 
 @bp.route('/bug/<int:id>', methods=['GET', 'POST'])
@@ -234,7 +254,11 @@ def edit(id):
         flash('Bug已更新')
         return redirect(url_for('bug.detail', id=id))
     
-    projects = Project.query.filter_by(creator_id=current_user.id).all()
+    # 管理员可以查看所有项目，普通用户只能查看自己创建的项目
+    if current_user.is_admin:
+        projects = Project.query.all()
+    else:
+        projects = Project.query.filter_by(creator_id=current_user.id).all()
     return render_template('bug/edit.html', bug=bug, projects=projects)
 
 @bp.route('/bug/attachment/<int:id>')

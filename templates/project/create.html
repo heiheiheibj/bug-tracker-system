@@ -1,26 +1,181 @@
 {% extends "base.html" %}
 
+{% block title %}创建新项目{% endblock %}
+
+{% block head %}
+<style>
+    :root {
+        --highlight-blue: rgba(0, 122, 255, 0.1);
+        --highlight-purple: rgba(175, 82, 222, 0.1);
+        --highlight-green: rgba(52, 199, 89, 0.1);
+        --text-primary: #000;
+        --text-secondary: #6e6e73;
+    }
+
+    .create-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .hero-section {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        margin-top: 0rem;
+        margin-bottom: 1rem;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.8s ease-out;
+    }
+
+    .hero-section.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, #000 0%, #333 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+        font-size: 1.2rem;
+        color: var(--text-secondary);
+    }
+
+    .form-section {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.6s ease-out;
+    }
+
+    .form-section.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.8rem;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        background: white;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: #0066cc;
+        box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
+        outline: none;
+    }
+
+    textarea.form-control {
+        min-height: 150px;
+        resize: vertical;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+
+    .action-button {
+        padding: 0.8rem 1.5rem;
+        border-radius: 10px;
+        font-size: 1rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .action-button:hover {
+        transform: translateY(-2px);
+    }
+
+    .action-button.primary {
+        background: #0066cc;
+        color: white;
+    }
+
+    .action-button.secondary {
+        background: rgba(0, 0, 0, 0.1);
+        color: var(--text-primary);
+    }
+
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <h2>创建新项目</h2>
-    <form method="post">
-        {{ form.hidden_tag() }}
-        <div class="form-group">
-            {{ form.name.label }}
-            {{ form.name(class="form-control") }}
-            {% for error in form.name.errors %}
-            <small class="text-danger">{{ error }}</small>
-            {% endfor %}
-        </div>
-        <div class="form-group">
-            {{ form.description.label }}
-            {{ form.description(class="form-control", rows="3") }}
-            {% for error in form.description.errors %}
-            <small class="text-danger">{{ error }}</small>
-            {% endfor %}
-        </div>
-        <button type="submit" class="btn btn-primary">创建项目</button>
-        <a href="{{ url_for('project.index') }}" class="btn btn-secondary">取消</a>
-    </form>
+<div class="create-container">
+    <section class="hero-section">
+        <h1 class="hero-title">创建新项目</h1>
+        <p class="hero-subtitle">开始一个全新的项目，记录您的想法和计划</p>
+    </section>
+
+    <div class="form-section">
+        <form method="post">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                <label class="form-label">{{ form.name.label }}</label>
+                {{ form.name(class="form-control", placeholder="请输入项目名称") }}
+                {% for error in form.name.errors %}
+                <small class="text-danger">{{ error }}</small>
+                {% endfor %}
+            </div>
+            <div class="form-group">
+                <label class="form-label">{{ form.description.label }}</label>
+                {{ form.description(class="form-control", rows="5", placeholder="请输入项目描述") }}
+                {% for error in form.description.errors %}
+                <small class="text-danger">{{ error }}</small>
+                {% endfor %}
+            </div>
+            <div class="btn-group">
+                <button type="submit" class="action-button primary">创建项目</button>
+                <a href="{{ url_for('project.index') }}" class="action-button secondary">取消</a>
+            </div>
+        </form>
+    </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 初始化显示动画
+    setTimeout(() => {
+        document.querySelector('.hero-section').classList.add('visible');
+        document.querySelector('.form-section').classList.add('visible');
+    }, 100);
+});
+</script>
 {% endblock %}

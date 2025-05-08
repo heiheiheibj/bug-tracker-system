@@ -63,6 +63,8 @@ def logout():
 
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
+    return '<h1>注册功能不开放，请与管理员联系</h1>'
+
     if current_user.is_authenticated:
         return redirect(url_for('bug.index'))
     

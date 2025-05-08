@@ -374,15 +374,18 @@
     <!-- Pagination -->
     {% if bugs.pages > 1 %}
     <div class="pagination">
+        {% set args = request.args.copy() %}
+        {% set _ = args.pop('page', None) %}
+        
         {% if bugs.has_prev %}
-        <a href="{{ url_for('bug.index', page=bugs.prev_num, **request.args) }}" class="page-button">上一页</a>
+        <a href="{{ url_for('bug.index', page=bugs.prev_num, **args) }}" class="page-button">上一页</a>
         {% endif %}
         
-        {% for page in bugs.iter_pages() %}
-            {% if page %}
-                <a href="{{ url_for('bug.index', page=page, **request.args) }}" 
-                   class="page-button {% if page == bugs.page %}active{% endif %}">
-                    {{ page }}
+        {% for page_num in bugs.iter_pages() %}
+            {% if page_num %}
+                <a href="{{ url_for('bug.index', page=page_num, **args) }}" 
+                   class="page-button {% if page_num == bugs.page %}active{% endif %}">
+                    {{ page_num }}
                 </a>
             {% else %}
                 <span class="page-button" style="pointer-events: none;">...</span>
@@ -390,7 +393,7 @@
         {% endfor %}
         
         {% if bugs.has_next %}
-        <a href="{{ url_for('bug.index', page=bugs.next_num, **request.args) }}" class="page-button">下一页</a>
+        <a href="{{ url_for('bug.index', page=bugs.next_num, **args) }}" class="page-button">下一页</a>
         {% endif %}
     </div>
     {% endif %}

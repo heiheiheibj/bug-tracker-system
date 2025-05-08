@@ -3,12 +3,13 @@
 {% block title %}登录{% endblock %}
 
 {% block content %}
-<div class="layui-container">
-    <div class="layui-row">
-        <div class="layui-col-md4 layui-col-md-offset4">
-            <div class="layui-card">
-                <div class="layui-card-header">用户登录</div>
-                <div class="layui-card-body">
+<div class="login-container" style="min-height: 60vh; display: flex; align-items: center; justify-content: center;">
+    <div class="layui-container">
+        <div class="layui-row">
+            <div class="layui-col-md4 layui-col-md-offset4">
+                <div class="layui-card" style="background-color: #ffffff; border: 1px solid #a0e0e0; box-shadow: 0 0 10px rgba(0,0,0,0.1); position: relative; overflow: hidden;">
+                    <div class="layui-card-header" style="color: #333333; font-size: 24px; text-align: center; border-bottom: 1px solid #a0e0e0;margin-top: 1rem;margin-bottom: 1rem;  ">用户登录</div>
+                    <div class="layui-card-body">
                     {% with messages = get_flashed_messages(with_categories=true) %}
                         {% if messages %}
                             <div class="layui-card" style="margin-bottom: 15px;">
@@ -26,20 +27,22 @@
                             <label class="layui-form-label">用户名/邮箱</label>
                             <div class="layui-input-block">
                                 <input type="text" name="username" required lay-verify="required" 
-                                       placeholder="请输入用户名或邮箱" autocomplete="off" class="layui-input">
+                                       placeholder="请输入用户名或邮箱" autocomplete="off" class="layui-input" style="background-color: #f5f5f5; border: 1px solid #a0e0e0; color: #333333;">
                             </div>
                         </div>
-                        <div class="layui-form-item">
+                        <div class="layui-form-item" style="margin-top: 2rem;">
                             <label class="layui-form-label">密码</label>
                             <div class="layui-input-block">
                                 <input type="password" name="password" required lay-verify="required" 
-                                       placeholder="请输入密码" class="layui-input">
+                                       placeholder="请输入密码" class="layui-input" style="background-color: #f5f5f5; border: 1px solid #a0e0e0; color: #333333;">
                             </div>
                         </div>
-                        <div class="layui-form-item">
+                        <div class="layui-form-item" style="margin-bottom: 0px !important;" >
                             <div class="layui-input-block"></div>
-                                <button class="layui-btn" lay-submit>登录</button>
-                                <a href="{{ url_for('auth.register') }}" class="layui-btn layui-btn-primary">注册账号</a>
+                                <button class="layui-btn" lay-submit style="background: linear-gradient(90deg, #4db6ac, #26a69a); border: none; width: 100%; margin-top: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                        登录
+                    </button>
+                                <a href="{{ url_for('auth.register') }}" class="layui-btn layui-btn-primary" style="display: none;">注册账号</a>
                             </div>
                         </div>
                     </form>
@@ -54,4 +57,5 @@
 form.on('submit()', function(data){
     return true;
 });
+
 {% endblock %}

@@ -8,8 +8,13 @@ from app.project.forms import ProjectForm
 
 @bp.route('/projects')
 @login_required
+@active_required
 def index():
-    projects = Project.query.filter_by(creator_id=current_user.id).all()
+    # 管理员可以查看所有项目，普通用户只能查看自己创建的项目
+    if current_user.is_admin:
+        projects = Project.query.all()
+    else:
+        projects = Project.query.filter_by(creator_id=current_user.id).all()
     return render_template('project/index.html', projects=projects)
 
 @bp.route('/project/create', methods=['GET', 'POST'])
@@ -36,7 +41,7 @@ def create():
 @active_required
 def edit(id):
     project = Project.query.get_or_404(id)
-    if project.creator_id != current_user.id:
+    if project.creator_id != current_user.id and not current_user.is_admin:
         flash('无权编辑此项目', 'error')
         return redirect(url_for('project.index'))
     
@@ -55,9 +60,10 @@ def edit(id):
 
 @bp.route('/project/<int:id>/delete', methods=['POST'])
 @login_required
+@active_required
 def delete(id):
     project = Project.query.get_or_404(id)
-    if project.creator_id != current_user.id:
+    if project.creator_id != current_user.id and not current_user.is_admin:
         flash('无权删除此项目', 'error')
         return redirect(url_for('project.index'))
         
