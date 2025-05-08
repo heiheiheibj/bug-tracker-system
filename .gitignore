@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+ENV/
+
+# Database
+*.sqlite
+*.db
+
+# IDE
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Logs and databases
+*.log
+*.sql
+*.sqlite
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Uploads
+uploads/
+
+# Archives
+*.7z
+*.zip
+*.tar.gz
+
+# Development files
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Static files
+app/static/font/

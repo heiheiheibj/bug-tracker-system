@@ -66,8 +66,25 @@ def delete(id):
     if project.creator_id != current_user.id and not current_user.is_admin:
         flash('无权删除此项目', 'error')
         return redirect(url_for('project.index'))
+    
+    try:
+        # 获取关联的bug数量用于提示
+        bug_count = len(project.bugs)
         
-    db.session.delete(project)
-    db.session.commit()
-    flash('项目已删除', 'success')
+        # 在事务中执行删除操作
+        db.session.delete(project)
+        db.session.commit()
+        
+        # 提供更详细的成功信息
+        if bug_count > 0:
+            flash(f'项目"{project.name}"及其关联的{bug_count}个缺陷已被删除', 'success')
+        else:
+            flash(f'项目"{project.name}"已删除', 'success')
+            
+    except Exception as e:
+        # 回滚事务
+        db.session.rollback()
+        # 提供友好的错误信息
+        flash(f'删除项目时发生错误：{str(e)}', 'error')
+        
     return redirect(url_for('project.index'))

@@ -41,6 +41,7 @@ class Project(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
     creator_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     creator = db.relationship('User', backref=db.backref('projects', lazy=True))
+    bugs = db.relationship('Bug', cascade='all, delete-orphan')
 
     def __repr__(self):
         return f'<Project {self.name}>'
@@ -58,7 +59,7 @@ class Bug(db.Model):
     creator_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
     creator = db.relationship('User', backref=db.backref('bugs', lazy=True))
-    project = db.relationship('Project', backref=db.backref('bugs', lazy=True))
+    project = db.relationship('Project')
 
     def __repr__(self):
         return f'<Bug {self.title}>'
@@ -91,7 +92,7 @@ class Attachment(db.Model):
     uploader_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     comment_id = db.Column(db.Integer, db.ForeignKey('comment.id'))
     
-    bug = db.relationship('Bug', backref=db.backref('attachments', lazy=True))
+    bug = db.relationship('Bug', backref=db.backref('attachments', lazy=True, cascade='all, delete-orphan'))
     uploader = db.relationship('User', backref=db.backref('uploads', lazy=True))
 
     @staticmethod

@@ -271,6 +271,21 @@ def download_attachment(id):
         flash('文件不存在')
         return redirect(url_for('bug.detail', id=attachment.bug_id))
     
+    # 获取文件扩展名
+    file_ext = attachment.filename.rsplit('.', 1)[-1].lower() if '.' in attachment.filename else ''
+    
+    # 定义直接在浏览器中打开的文件类型
+    preview_extensions = {'pdf', 'txt', 'md', 'jpg', 'jpeg', 'png', 'webp'}
+    
+    # 如果是可预览的文件类型，直接在浏览器中打开
+    if file_ext in preview_extensions:
+        return send_file(
+            file_path,
+            download_name=attachment.filename,
+            as_attachment=False
+        )
+    
+    # 其他类型的文件仍然作为附件下载
     return send_file(
         file_path,
         download_name=attachment.filename,
